@@ -1,5 +1,14 @@
+import OpenAI from "openai";
+
 const MAX_MESSAGES = 50;
 const MAX_INPUT_CHARS = 3500;
+
+function getClient(hfToken) {
+  return new OpenAI({
+    baseURL: "https://router.huggingface.co/v1",
+    apiKey: hfToken,
+  });
+}
 
 function getChatCache() {
   if (!globalThis.__chatCache) {
@@ -24,35 +33,30 @@ function getMessagesForChat(chatId) {
 }
 
 async function summarizeMessages(text, hfToken) {
-  const response = await fetch(
-    "https://router.huggingface.co/v1",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${hfToken}`,
-        "Content-Type": "application/json",
+  const client = getClient(hfToken);
+  const completion = await client.chat.completions.create({
+    model: "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
+    messages: [
+      {
+        role: "system",
+        content:
+          "Summarize the following Telegram group messages in a concise, neutral tone.",
       },
-      body: JSON.stringify({
-        inputs: text,
-        parameters: {
-          max_length: 140,
-          min_length: 40,
-        },
-      }),
-    }
-  );
+      {
+        role: "user",
+        content: text,
+      },
+    ],
+    max_tokens: 200,
+    temperature: 0.3,
+  });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HF API error ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  if (!Array.isArray(data) || !data[0]?.summary_text) {
+  const summary = completion?.choices?.[0]?.message?.content?.trim();
+  if (!summary) {
     throw new Error("Unexpected HF response format.");
   }
 
-  return data[0].summary_text;
+  return summary;
 }
 
 async function sendTelegramMessage(botToken, chatId, text) {
