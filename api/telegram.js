@@ -1,5 +1,6 @@
 const MAX_MESSAGES = 50;
 const MAX_INPUT_CHARS = 3500;
+
 function getChatCache() {
   if (!globalThis.__chatCache) {
     globalThis.__chatCache = new Map();
@@ -111,7 +112,8 @@ export default async function handler(req, res) {
   const hfToken = process.env.HF_TOKEN;
 
   if (!botToken || !hfToken) {
-    res.status(500).send("Missing TELEGRAM_BOT_TOKEN or HF_TOKEN.");
+    console.error("Missing TELEGRAM_BOT_TOKEN or HF_TOKEN.");
+    res.status(200).send("Missing TELEGRAM_BOT_TOKEN or HF_TOKEN.");
     return;
   }
 
@@ -175,11 +177,12 @@ export default async function handler(req, res) {
     await sendTelegramMessage(botToken, chatId, summary);
     res.status(200).send("Summary sent.");
   } catch (error) {
+    console.error("Failed to summarize messages.", error);
     await sendTelegramMessage(
       botToken,
       chatId,
       "Sorry, I couldn't generate a summary right now."
     );
-    res.status(500).send(String(error));
+    res.status(200).send("Summary failed.");
   }
 }
