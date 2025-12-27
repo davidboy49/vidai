@@ -25,7 +25,7 @@ function getMessagesForChat(chatId) {
 
 async function summarizeMessages(text, hfToken) {
   const response = await fetch(
-    "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+    "https://router.huggingface.co/v1",
     {
       method: "POST",
       headers: {
