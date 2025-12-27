@@ -1,6 +1,6 @@
 const MAX_MESSAGES = 50;
 const MAX_INPUT_CHARS = 3500;
-
+const botToken = "vck_5IwBRSw2ApFMBLFJo9y820nUgcfYfmfK3Y1xcJ8bxFcYigbcGH1RUd15"
 function getChatCache() {
   if (!globalThis.__chatCache) {
     globalThis.__chatCache = new Map();
