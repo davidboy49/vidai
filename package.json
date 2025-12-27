@@ -1,0 +1,12 @@
+{
+  "name": "vidai-telegram-summary-bot",
+  "version": "1.0.0",
+  "description": "Telegram group summary bot hosted on Vercel.",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "openai": "^4.73.1"
+  }
+}
