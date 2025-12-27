@@ -74,6 +74,34 @@ async function sendTelegramMessage(botToken, chatId, text) {
   }
 }
 
+function readRawBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    req.on("data", (chunk) => {
+      data += chunk;
+    });
+    req.on("end", () => resolve(data));
+    req.on("error", reject);
+  });
+}
+
+async function parseUpdate(req) {
+  if (req.body && typeof req.body === "object") {
+    return req.body;
+  }
+
+  if (typeof req.body === "string" && req.body.length > 0) {
+    return JSON.parse(req.body);
+  }
+
+  const raw = await readRawBody(req);
+  if (!raw) {
+    return null;
+  }
+
+  return JSON.parse(raw);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).send("Method Not Allowed");
@@ -88,7 +116,18 @@ export default async function handler(req, res) {
     return;
   }
 
-  const update = req.body;
+  let update;
+  try {
+    update = await parseUpdate(req);
+  } catch (error) {
+    res.status(400).send(`Invalid JSON payload: ${error.message}`);
+    return;
+  }
+
+  if (!update) {
+    res.status(200).send("No update payload.");
+    return;
+  }
   const message = update?.message;
 
   if (!message?.chat?.id) {
@@ -104,10 +143,16 @@ export default async function handler(req, res) {
     return;
   }
 
-  const isSummaryCommand = text.startsWith("/summary");
+  const botUsername = process.env.TELEGRAM_BOT_USERNAME;
+  const commandRegex = botUsername
+    ? new RegExp(`^/summary(@${botUsername})?(\\s|$)`, "i")
+    : /^\/summary(\s|$)/i;
+  const isSummaryCommand = commandRegex.test(text);
 
   if (!isSummaryCommand) {
-    addMessageToCache(chatId, text);
+    if (!message.from?.is_bot) {
+      addMessageToCache(chatId, text);
+    }
     res.status(200).send("Message cached.");
     return;
   }

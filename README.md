@@ -11,6 +11,7 @@ and uses the Hugging Face inference API to summarize recent messages.
 
 - `TELEGRAM_BOT_TOKEN`
 - `HF_TOKEN`
+- `TELEGRAM_BOT_USERNAME` (optional, without the leading `@`, to match `/summary@YourBot`)
 
 ## Webhook
 
