@@ -40,22 +40,7 @@ async function summarizeMessages(text, hfToken) {
       {
         role: "system",
         content:
-          Summarize this Telegram group chat:
-
-Main Topics:
-- bullets
-
-Decisions:
-- bullets or None
-
-Conflicts:
-- bullets or None
-
-Short Summary:
-2–3 sentences
-
-Chat:
-{messages_text}",
+          "Summarize this Telegram group chat\n- Main Topics:\n- Short Summary",
       },
       {
         role: "user",
