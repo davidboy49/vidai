@@ -35,12 +35,12 @@ function getMessagesForChat(chatId) {
 async function summarizeMessages(text, hfToken) {
   const client = getClient(hfToken);
   const completion = await client.chat.completions.create({
-    model: "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
+    model: "deepseek-ai/DeepSeek-V3.2:novita",
     messages: [
       {
         role: "system",
         content:
-          "Professional tone, Please short summarize this Telegram group chat\n- Main Topics: ",
+          "Professional tone, Announce by your model name and Please short summarize this Telegram group chat\n- Main Topics: ",
       },
       {
         role: "user",
