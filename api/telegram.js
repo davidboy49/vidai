@@ -35,7 +35,7 @@ function getMessagesForChat(chatId) {
 async function summarizeMessages(text, hfToken) {
   const client = getClient(hfToken);
   const completion = await client.chat.completions.create({
-    model: "deepseek-ai/DeepSeek-V3.2:novita",
+    model: "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
     messages: [
       {
         role: "system",
