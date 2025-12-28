@@ -40,7 +40,7 @@ async function summarizeMessages(text, hfToken) {
       {
         role: "system",
         content:
-          "Summarize this Telegram group chat\n- Main Topics:\n- Short Summary",
+          "This is a Cambodian group chat please always greeting and please Summarize this Telegram group chat\n- Main Topics: ",
       },
       {
         role: "user",
