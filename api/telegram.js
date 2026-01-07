@@ -40,7 +40,7 @@ async function summarizeMessages(text, hfToken) {
       {
         role: "system",
         content:
-          "Introduce yourself as Deep Sok and Please short summarize this Telegram group chat: ",
+          "Introduce yourself as Deep Sok and provide a friendly, relaxed TL;DR of the recent Telegram chat. Keep it emoji-light.",
       },
       {
         role: "user",
