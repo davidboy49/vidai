@@ -32,15 +32,28 @@ function getMessagesForChat(chatId) {
   return cache.get(chatId)?.messages ?? [];
 }
 
-async function summarizeMessages(text, hfToken) {
+function getSystemPrompt(commandType) {
+  if (commandType === "activity") {
+    return (
+      "Introduce yourself as Deep Sok and share the latest activity highlights from the recent Telegram chat. " +
+      "Keep it friendly, relaxed, and emoji-light."
+    );
+  }
+
+  return (
+    "Introduce yourself as Deep Sok and provide a friendly, relaxed TL;DR of the recent Telegram chat. " +
+    "Keep it emoji-light."
+  );
+}
+
+async function summarizeMessages(text, hfToken, commandType) {
   const client = getClient(hfToken);
   const completion = await client.chat.completions.create({
     model: "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
     messages: [
       {
         role: "system",
-        content:
-          "Introduce yourself as Deep Sok and provide a friendly, relaxed TL;DR of the recent Telegram chat. Keep it emoji-light.",
+        content: getSystemPrompt(commandType),
       },
       {
         role: "user",
@@ -57,6 +70,24 @@ async function summarizeMessages(text, hfToken) {
   }
 
   return summary;
+}
+
+function getCommandType(text, botUsername) {
+  const basePattern = botUsername
+    ? `(@${botUsername})?(\\s|$)`
+    : "(\\s|$)";
+
+  const summaryRegex = new RegExp(`^/summary${basePattern}`, "i");
+  if (summaryRegex.test(text)) {
+    return "summary";
+  }
+
+  const activityRegex = new RegExp(`^/activity${basePattern}`, "i");
+  if (activityRegex.test(text)) {
+    return "activity";
+  }
+
+  return null;
 }
 
 async function sendTelegramMessage(botToken, chatId, text) {
@@ -149,12 +180,9 @@ export default async function handler(req, res) {
   }
 
   const botUsername = process.env.TELEGRAM_BOT_USERNAME;
-  const commandRegex = botUsername
-    ? new RegExp(`^/summary(@${botUsername})?(\\s|$)`, "i")
-    : /^\/summary(\s|$)/i;
-  const isSummaryCommand = commandRegex.test(text);
+  const commandType = getCommandType(text, botUsername);
 
-  if (!isSummaryCommand) {
+  if (!commandType) {
     if (!message.from?.is_bot) {
       addMessageToCache(chatId, text);
     }
@@ -164,10 +192,14 @@ export default async function handler(req, res) {
 
   const cachedMessages = getMessagesForChat(chatId);
   if (cachedMessages.length === 0) {
+    const emptyMessage =
+      commandType === "activity"
+        ? "No recent activity to report yet."
+        : "No messages to summarize yet.";
     await sendTelegramMessage(
       botToken,
       chatId,
-      "No messages to summarize yet."
+      emptyMessage
     );
     res.status(200).send("No messages to summarize.");
     return;
@@ -177,7 +209,7 @@ export default async function handler(req, res) {
   const truncated = combined.slice(-MAX_INPUT_CHARS);
 
   try {
-    const summary = await summarizeMessages(truncated, hfToken);
+    const summary = await summarizeMessages(truncated, hfToken, commandType);
     await sendTelegramMessage(botToken, chatId, summary);
     res.status(200).send("Summary sent.");
   } catch (error) {
