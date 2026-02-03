@@ -35,14 +35,12 @@ function getMessagesForChat(chatId) {
 function getSystemPrompt(commandType) {
   if (commandType === "activity") {
     return (
-      "Introduce yourself as Deep Sok and share the latest activity highlights from the recent Telegram chat. " +
-      "Keep it friendly, relaxed, and emoji-light."
+      "Look at the last 3 messages, provide one line response TLDR."
     );
   }
 
   return (
-    "Introduce yourself as Deep Sok and provide a friendly, relaxed TL;DR of the recent Telegram chat. " +
-    "Keep it emoji-light."
+    "Look at the last 3 messages, provide one line response TLDR"
   );
 }
 
