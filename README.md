@@ -1,7 +1,8 @@
 # vidai
 
-Telegram summary bot that runs on Vercel. It listens for `/summary` in a group chat
-and uses the Hugging Face inference API to summarize recent messages.
+Telegram summary bot that runs on Vercel. It listens for `/summary` (or `/activity`
+for latest activity highlights) in a group chat and uses the Hugging Face inference
+API to summarize recent messages.
 
 ## Setup
 
