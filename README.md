@@ -2,7 +2,8 @@
 
 Telegram summary bot that runs on Vercel. It listens for `/summary` (or `/activity`
 for latest activity highlights) in a group chat and uses the Hugging Face inference
-API to summarize recent messages.
+API to summarize recent messages. It also supports `/quote` to generate and send
+a random Greek, Chinese, or Stoic quote via the Hugging Face model directly in chat.
 
 ## Setup
 
