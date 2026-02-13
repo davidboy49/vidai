@@ -2,6 +2,8 @@ import OpenAI from "openai";
 
 const MAX_MESSAGES = 50;
 const MAX_INPUT_CHARS = 3500;
+const MAX_RECENT_QUOTES = 10;
+const QUOTE_GENERATION_RETRIES = 4;
 const QUOTE_TRADITIONS = ["Greek", "Chinese", "Stoic"];
 
 function pickRandomQuoteTradition() {
@@ -36,6 +38,26 @@ function addMessageToCache(chatId, messageText) {
 function getMessagesForChat(chatId) {
   const cache = getChatCache();
   return cache.get(chatId)?.messages ?? [];
+}
+
+function normalizeQuoteText(text) {
+  return text.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function getRecentQuotesForChat(chatId) {
+  const cache = getChatCache();
+  return cache.get(chatId)?.recentQuotes ?? [];
+}
+
+function addRecentQuoteForChat(chatId, quoteText) {
+  const cache = getChatCache();
+  const entry = cache.get(chatId) ?? { messages: [], recentQuotes: [] };
+  entry.recentQuotes = entry.recentQuotes ?? [];
+  entry.recentQuotes.push(normalizeQuoteText(quoteText));
+  if (entry.recentQuotes.length > MAX_RECENT_QUOTES) {
+    entry.recentQuotes = entry.recentQuotes.slice(-MAX_RECENT_QUOTES);
+  }
+  cache.set(chatId, entry);
 }
 
 function getSystemPrompt(commandType) {
@@ -83,13 +105,31 @@ async function summarizeMessages(text, hfToken, commandType) {
   return summary;
 }
 
-async function generateQuote(hfToken) {
-  const tradition = pickRandomQuoteTradition();
-  return summarizeMessages(
-    `Please give me one random ${tradition} quote.`,
+async function generateQuote(hfToken, chatId) {
+  const recentQuotes = getRecentQuotesForChat(chatId);
+
+  for (let attempt = 0; attempt < QUOTE_GENERATION_RETRIES; attempt += 1) {
+    const tradition = pickRandomQuoteTradition();
+    const quote = await summarizeMessages(
+      `Please give me one random ${tradition} quote. Avoid repeating any of these recent quotes: ${recentQuotes.join(" | ") || "none"}.`,
+      hfToken,
+      "quote"
+    );
+
+    if (!recentQuotes.includes(normalizeQuoteText(quote))) {
+      addRecentQuoteForChat(chatId, quote);
+      return quote;
+    }
+  }
+
+  const fallbackTradition = pickRandomQuoteTradition();
+  const fallbackQuote = await summarizeMessages(
+    `Please give me one random ${fallbackTradition} quote with author.`,
     hfToken,
     "quote"
   );
+  addRecentQuoteForChat(chatId, fallbackQuote);
+  return fallbackQuote;
 }
 
 function getCommandType(text, botUsername) {
@@ -228,7 +268,7 @@ export default async function handler(req, res) {
 
   if (commandType === "quote") {
     try {
-      const quote = await generateQuote(hfToken);
+      const quote = await generateQuote(hfToken, chatId);
       await sendTelegramMessage(botToken, chatId, quote);
       res.status(200).send("Quote sent.");
     } catch (error) {
