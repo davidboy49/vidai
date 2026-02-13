@@ -2,6 +2,12 @@ import OpenAI from "openai";
 
 const MAX_MESSAGES = 50;
 const MAX_INPUT_CHARS = 3500;
+const QUOTE_TRADITIONS = ["Greek", "Chinese", "Stoic"];
+
+function pickRandomQuoteTradition() {
+  const randomIndex = Math.floor(Math.random() * QUOTE_TRADITIONS.length);
+  return QUOTE_TRADITIONS[randomIndex];
+}
 
 function getClient(hfToken) {
   return new OpenAI({
@@ -43,8 +49,8 @@ function getSystemPrompt(commandType) {
 
   if (commandType === "quote") {
     return (
-      "Generate one random inspirational quote and include the author. " +
-      "Format exactly as: \"<quote>\" — <author>."
+      "Generate one short quote from the requested tradition (Greek, Chinese, or Stoic) and include the author. " +
+      "Prefer real, well-known quotes when possible. Format exactly as: \"<quote>\" — <author>."
     );
   }
 
@@ -78,7 +84,12 @@ async function summarizeMessages(text, hfToken, commandType) {
 }
 
 async function generateQuote(hfToken) {
-  return summarizeMessages("Please give me a random quote.", hfToken, "quote");
+  const tradition = pickRandomQuoteTradition();
+  return summarizeMessages(
+    `Please give me one random ${tradition} quote.`,
+    hfToken,
+    "quote"
+  );
 }
 
 function getCommandType(text, botUsername) {
