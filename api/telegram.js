@@ -43,7 +43,17 @@ function getSystemPrompt(commandType) {
     "Look at the last 3 messages, provide one line response TLDR"
   );
 }
+function getSystemPrompt(commandType) {
+  if (commandType === "quote") {
+    return (
+      "Give a random quote also with the author."
+    );
+  }
 
+  return (
+    "Give a random quote also with the author."
+  );
+}
 async function summarizeMessages(text, hfToken, commandType) {
   const client = getClient(hfToken);
   const completion = await client.chat.completions.create({
