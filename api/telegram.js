@@ -2,6 +2,12 @@ import OpenAI from "openai";
 
 const MAX_MESSAGES = 50;
 const MAX_INPUT_CHARS = 3500;
+const QUOTE_TRADITIONS = ["Greek", "Chinese", "Stoic"];
+
+function pickRandomQuoteTradition() {
+  const randomIndex = Math.floor(Math.random() * QUOTE_TRADITIONS.length);
+  return QUOTE_TRADITIONS[randomIndex];
+}
 
 function getClient(hfToken) {
   return new OpenAI({
@@ -34,26 +40,23 @@ function getMessagesForChat(chatId) {
 
 function getSystemPrompt(commandType) {
   if (commandType === "activity") {
-    return (
-      "Look at the last 3 messages, provide one line response TLDR."
-    );
+    return "Look at the last 3 messages and provide one-line activity highlights.";
   }
 
-  return (
-    "Look at the last 3 messages, provide one line response TLDR"
-  );
-}
-function getSystemPrompt(commandType) {
+  if (commandType === "summary") {
+    return "Look at the last 3 messages and provide a one-line TL;DR summary.";
+  }
+
   if (commandType === "quote") {
     return (
-      "Give a random quote also with the author."
+      "Generate one short quote from the requested tradition (Greek, Chinese, or Stoic) and include the author. " +
+      "Prefer real, well-known quotes when possible. Format exactly as: \"<quote>\" — <author>."
     );
   }
 
-  return (
-    "Give a random quote also with the author."
-  );
+  return "Respond briefly and clearly.";
 }
+
 async function summarizeMessages(text, hfToken, commandType) {
   const client = getClient(hfToken);
   const completion = await client.chat.completions.create({
@@ -80,6 +83,15 @@ async function summarizeMessages(text, hfToken, commandType) {
   return summary;
 }
 
+async function generateQuote(hfToken) {
+  const tradition = pickRandomQuoteTradition();
+  return summarizeMessages(
+    `Please give me one random ${tradition} quote.`,
+    hfToken,
+    "quote"
+  );
+}
+
 function getCommandType(text, botUsername) {
   const basePattern = botUsername
     ? `(@${botUsername})?(\\s|$)`
@@ -93,6 +105,11 @@ function getCommandType(text, botUsername) {
   const activityRegex = new RegExp(`^/activity${basePattern}`, "i");
   if (activityRegex.test(text)) {
     return "activity";
+  }
+
+  const quoteRegex = new RegExp(`^/quote${basePattern}`, "i");
+  if (quoteRegex.test(text)) {
+    return "quote";
   }
 
   return null;
@@ -154,9 +171,9 @@ export default async function handler(req, res) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const hfToken = process.env.HF_TOKEN;
 
-  if (!botToken || !hfToken) {
-    console.error("Missing TELEGRAM_BOT_TOKEN or HF_TOKEN.");
-    res.status(200).send("Missing TELEGRAM_BOT_TOKEN or HF_TOKEN.");
+  if (!botToken) {
+    console.error("Missing TELEGRAM_BOT_TOKEN.");
+    res.status(200).send("Missing TELEGRAM_BOT_TOKEN.");
     return;
   }
 
@@ -198,17 +215,41 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (!hfToken) {
+    console.error("Missing HF_TOKEN.");
+    await sendTelegramMessage(
+      botToken,
+      chatId,
+      "HF_TOKEN is not configured, so I can't process this command right now."
+    );
+    res.status(200).send("Missing HF_TOKEN.");
+    return;
+  }
+
+  if (commandType === "quote") {
+    try {
+      const quote = await generateQuote(hfToken);
+      await sendTelegramMessage(botToken, chatId, quote);
+      res.status(200).send("Quote sent.");
+    } catch (error) {
+      console.error("Failed to generate quote.", error);
+      await sendTelegramMessage(
+        botToken,
+        chatId,
+        "Sorry, I couldn't generate a quote right now."
+      );
+      res.status(200).send("Quote failed.");
+    }
+    return;
+  }
+
   const cachedMessages = getMessagesForChat(chatId);
   if (cachedMessages.length === 0) {
     const emptyMessage =
       commandType === "activity"
         ? "No recent activity to report yet."
         : "No messages to summarize yet.";
-    await sendTelegramMessage(
-      botToken,
-      chatId,
-      emptyMessage
-    );
+    await sendTelegramMessage(botToken, chatId, emptyMessage);
     res.status(200).send("No messages to summarize.");
     return;
   }
