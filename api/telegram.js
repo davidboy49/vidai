@@ -26,11 +26,42 @@ function pickRandomQuoteTradition() {
   return QUOTE_TRADITIONS[Math.floor(Math.random() * QUOTE_TRADITIONS.length)];
 }
 
-function getClient(hfToken) {
+function getClient(apiKey, baseURL) {
   return new OpenAI({
-    baseURL: "https://router.huggingface.co/v1",
-    apiKey: hfToken,
+    baseURL: baseURL || "https://router.huggingface.co/v1",
+    apiKey: apiKey,
   });
+}
+
+function getAIConfig(config) {
+  let aiConfig = {
+    apiKey: process.env.HF_TOKEN,
+    baseURL: "https://router.huggingface.co/v1",
+    model: config.hfModel || "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai"
+  };
+
+  if (config.profiles && config.activeProfileId) {
+    const active = config.profiles.find(p => p.id === config.activeProfileId);
+    if (active) {
+      let apiKey = active.apiKey;
+      if (!apiKey) {
+        if (active.provider === "huggingface") {
+          apiKey = process.env.HF_TOKEN;
+        } else if (active.provider === "gemini") {
+          apiKey = process.env.GEMINI_API_KEY;
+        } else if (active.provider === "openai") {
+          apiKey = process.env.OPENAI_API_KEY;
+        }
+      }
+      aiConfig = {
+        apiKey: apiKey,
+        baseURL: active.baseURL || "https://router.huggingface.co/v1",
+        model: active.model
+      };
+    }
+  }
+
+  return aiConfig;
 }
 
 /**
@@ -278,11 +309,9 @@ function getSystemPrompt(commandType, systemPrompts) {
 /*  LLM interaction                                                   */
 /* ------------------------------------------------------------------ */
 
-async function callLLM(text, hfToken, commandType, systemPrompts, modelOverride) {
-  const client = getClient(hfToken);
-  const model =
-    modelOverride ||
-    "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai";
+async function callLLM(text, aiConfig, commandType, systemPrompts) {
+  const client = getClient(aiConfig.apiKey, aiConfig.baseURL);
+  const model = aiConfig.model || "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai";
 
   const completion = await client.chat.completions.create({
     model,
@@ -296,7 +325,7 @@ async function callLLM(text, hfToken, commandType, systemPrompts, modelOverride)
 
   const result = completion?.choices?.[0]?.message?.content?.trim();
   if (!result) {
-    throw new Error("Unexpected HF response format.");
+    throw new Error("Unexpected LLM response format.");
   }
   return result;
 }
@@ -305,17 +334,16 @@ async function callLLM(text, hfToken, commandType, systemPrompts, modelOverride)
  * Generate a unique quote and return both the text and the tradition used,
  * so we can pick the right emoji reaction.
  */
-async function generateQuote(hfToken, chatId, systemPrompts, modelOverride) {
+async function generateQuote(aiConfig, chatId, systemPrompts) {
   const recentQuotes = getRecentQuotesForChat(chatId);
 
   for (let attempt = 0; attempt < QUOTE_GENERATION_RETRIES; attempt += 1) {
     const tradition = pickRandomQuoteTradition();
     const quote = await callLLM(
       `Please give me one random ${tradition} quote. Avoid repeating any of these recent quotes: ${recentQuotes.join(" | ") || "none"}.`,
-      hfToken,
+      aiConfig,
       "quote",
-      systemPrompts,
-      modelOverride
+      systemPrompts
     );
 
     if (!recentQuotes.includes(normalizeQuoteText(quote))) {
@@ -328,10 +356,9 @@ async function generateQuote(hfToken, chatId, systemPrompts, modelOverride) {
   const fallbackTradition = pickRandomQuoteTradition();
   const fallbackQuote = await callLLM(
     `Please give me one random ${fallbackTradition} quote with author.`,
-    hfToken,
+    aiConfig,
     "quote",
-    systemPrompts,
-    modelOverride
+    systemPrompts
   );
   addRecentQuoteForChat(chatId, fallbackQuote);
   return { quote: fallbackQuote, tradition: fallbackTradition };
@@ -522,7 +549,6 @@ export default async function handler(req, res) {
   }
 
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const hfToken = process.env.HF_TOKEN;
 
   if (!botToken) {
     console.error("Missing TELEGRAM_BOT_TOKEN.");
@@ -532,6 +558,7 @@ export default async function handler(req, res) {
 
   // --- Load configuration dynamically -------------------------------
   const config = await getConfig();
+  const aiConfig = getAIConfig(config);
 
   // --- Parse the incoming Telegram update ---------------------------
   let update;
@@ -642,16 +669,16 @@ export default async function handler(req, res) {
           return; // Silently ignore non-admin chit-chat triggers to prevent spam
         }
 
-        if (!hfToken) {
-          console.error("Missing HF_TOKEN.");
+        if (!aiConfig.apiKey) {
+          console.error("Missing AI API Key.");
           await sendTelegramMessage(
             botToken,
             chatId,
-            "⚙️ HF_TOKEN is not configured — I can't chat right now.",
+            "⚙️ AI API key is not configured — I can't chat right now.",
             null,
             message.message_id
           );
-          res.status(200).send("Missing HF_TOKEN.");
+          res.status(200).send("Missing AI API Key.");
           return;
         }
 
@@ -692,10 +719,9 @@ export default async function handler(req, res) {
           
           const result = await callLLM(
             prompt,
-            hfToken,
+            aiConfig,
             "chitchat",
-            config.systemPrompts,
-            config.hfModel
+            config.systemPrompts
           );
           
           await sendTelegramMessage(
@@ -736,15 +762,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  // --- All remaining commands require HF_TOKEN ----------------------
-  if (!hfToken) {
-    console.error("Missing HF_TOKEN.");
+  // --- All remaining commands require API key ----------------------
+  if (!aiConfig.apiKey) {
+    console.error("Missing AI API Key.");
     await sendTelegramMessage(
       botToken,
       chatId,
-      "⚙️ HF_TOKEN is not configured — I can't process commands right now.",
+      "⚙️ AI API key is not configured — I can't process commands right now.",
     );
-    res.status(200).send("Missing HF_TOKEN.");
+    res.status(200).send("Missing AI API Key.");
     return;
   }
 
@@ -767,7 +793,7 @@ export default async function handler(req, res) {
 
     // ---- /quote ----------------------------------------------------
     if (commandType === "quote") {
-      const { quote, tradition } = await generateQuote(hfToken, chatId, config.systemPrompts, config.hfModel);
+      const { quote, tradition } = await generateQuote(aiConfig, chatId, config.systemPrompts);
       const formatted = formatResponse("quote", quote, tradition);
       await sendTelegramMessage(botToken, chatId, formatted, "HTML");
 
@@ -819,7 +845,7 @@ export default async function handler(req, res) {
         `Full chat context:\n${truncated}`;
     }
 
-    const result = await callLLM(prompt, hfToken, commandType, config.systemPrompts, config.hfModel);
+    const result = await callLLM(prompt, aiConfig, commandType, config.systemPrompts);
     const responseText = formatResponse(commandType, result);
     await sendTelegramMessage(botToken, chatId, responseText, "HTML");
 

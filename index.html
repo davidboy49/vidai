@@ -940,6 +940,73 @@
         </div>
       </div>
 
+      <!-- AI Profiles Card -->
+      <div class="card">
+        <h2 class="card-title">🔌 AI Provider Profiles</h2>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+          
+          <div class="form-group">
+            <label for="activeProfileSelect">Active AI Profile</label>
+            <select id="activeProfileSelect" class="form-control">
+              <option value="">-- Legacy Default (Hugging Face Env Token) --</option>
+            </select>
+            <span class="input-helper">Choose which model configuration the bot should use.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Configured Profiles</label>
+            <div id="profileListContainer" class="user-list">
+              <!-- Populated dynamically -->
+              <div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">No custom profiles configured.</div>
+            </div>
+          </div>
+
+          <form id="profileForm" onsubmit="handleSaveProfile(event)" style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+            <span id="profileFormTitle" style="font-size: 0.875rem; font-weight: 700;">Create or Edit Profile</span>
+            <input type="hidden" id="editingProfileId" value="">
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label for="profileName">Profile Name</label>
+                <input type="text" id="profileName" class="form-control" placeholder="e.g. Gemini Pro, OpenRouter" required>
+              </div>
+              <div class="form-group">
+                <label for="profileProvider">Provider Type</label>
+                <select id="profileProvider" class="form-control" onchange="onProviderChange()" required>
+                  <option value="huggingface">Hugging Face</option>
+                  <option value="gemini">Google Gemini</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="custom">Custom (OpenAI-compatible)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <div class="form-group" id="baseURLGroup">
+                <label for="profileBaseURL">API Base URL</label>
+                <input type="url" id="profileBaseURL" class="form-control" value="https://router.huggingface.co/v1" required>
+              </div>
+              <div class="form-group">
+                <label for="profileModel">Model Name</label>
+                <input type="text" id="profileModel" class="form-control" placeholder="e.g. gemini-1.5-flash" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="profileApiKey">API Key / Access Token</label>
+              <input type="password" id="profileApiKey" class="form-control" placeholder="Enter key/token (leave empty to keep unchanged for edits or use env fallback)">
+              <span class="input-helper">Uses server-side environment vars (HF_TOKEN, GEMINI_API_KEY, OPENAI_API_KEY) if left blank.</span>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; align-self: flex-end;">
+              <button type="button" id="cancelProfileEditBtn" class="btn btn-secondary" style="display: none;" onclick="resetProfileForm()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Profile</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
       <!-- User Management Card -->
       <div class="card">
         <h2 class="card-title">🔑 Dashboard User Accounts</h2>
@@ -1228,6 +1295,10 @@
           txt.value = prompts[f] || '';
         }
       });
+
+      // Populate AI Profiles list and dropdown select
+      populateProfilesDropdown(data.profiles || [], data.activeProfileId || "");
+      renderProfilesList(data.profiles || [], data.activeProfileId || "");
     }
 
     // Save configurations back to server
@@ -1260,7 +1331,9 @@
         chitchatLimitCount: parseInt(document.getElementById('chitchatLimitCount').value) || 5,
         chitchatLimitWindow: parseInt(document.getElementById('chitchatLimitWindow').value) || 120,
         disabledFeatures: disabledFeatures,
-        systemPrompts: systemPrompts
+        systemPrompts: systemPrompts,
+        profiles: currentConfig.profiles || [],
+        activeProfileId: currentConfig.activeProfileId || ""
       };
 
       try {
@@ -1283,6 +1356,7 @@
         if (response.ok) {
           currentConfig = updatedConfig;
           showToast('Configurations successfully applied!', 'success');
+          await fetchConfigData();
         } else {
           showToast('Failed to save settings', 'error');
         }
@@ -1290,6 +1364,235 @@
         console.error(err);
         showToast('Connection error during save', 'error');
       }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  AI Provider Profiles Management                                   */
+    /* ------------------------------------------------------------------ */
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const activeProfileSelect = document.getElementById('activeProfileSelect');
+      if (activeProfileSelect) {
+        activeProfileSelect.addEventListener('change', async function() {
+          currentConfig.activeProfileId = this.value;
+          await saveConfigData();
+        });
+      }
+    });
+
+    function onProviderChange() {
+      const provider = document.getElementById('profileProvider').value;
+      const baseURLInput = document.getElementById('profileBaseURL');
+      const modelInput = document.getElementById('profileModel');
+
+      if (provider === 'huggingface') {
+        baseURLInput.value = 'https://router.huggingface.co/v1';
+        modelInput.placeholder = 'mistralai/Mistral-7B-Instruct-v0.2:featherless-ai';
+      } else if (provider === 'gemini') {
+        baseURLInput.value = 'https://generativelanguage.googleapis.com/v1beta/openai/';
+        modelInput.placeholder = 'gemini-2.5-flash';
+      } else if (provider === 'openai') {
+        baseURLInput.value = 'https://api.openai.com/v1';
+        modelInput.placeholder = 'gpt-4o-mini';
+      } else if (provider === 'custom') {
+        baseURLInput.value = '';
+        baseURLInput.placeholder = 'https://api.provider.com/v1';
+        modelInput.placeholder = 'e.g. model-name';
+      }
+    }
+
+    function populateProfilesDropdown(profiles, activeProfileId) {
+      const select = document.getElementById('activeProfileSelect');
+      if (!select) return;
+
+      select.innerHTML = '<option value="">-- Legacy Default (Hugging Face Env Token) --</option>';
+
+      profiles.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.innerText = `${p.name} (${p.model})`;
+        if (p.id === activeProfileId) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+    }
+
+    function renderProfilesList(profiles, activeProfileId) {
+      const container = document.getElementById('profileListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (profiles.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">No custom profiles configured.</div>';
+        return;
+      }
+
+      profiles.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'user-item';
+
+        const info = document.createElement('div');
+        info.style.display = 'flex';
+        info.style.alignItems = 'center';
+        info.style.gap = '0.5rem';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'user-name';
+        nameSpan.innerText = p.name;
+        info.appendChild(nameSpan);
+
+        const providerBadge = document.createElement('span');
+        providerBadge.className = 'user-status-badge';
+        providerBadge.style.background = 'rgba(168, 85, 247, 0.15)';
+        providerBadge.style.color = 'var(--accent-purple)';
+        providerBadge.style.border = '1px solid rgba(168, 85, 247, 0.3)';
+        providerBadge.style.marginLeft = '0.25rem';
+        providerBadge.innerText = p.provider.toUpperCase();
+        info.appendChild(providerBadge);
+
+        const modelSpan = document.createElement('span');
+        modelSpan.style.fontSize = '0.8rem';
+        modelSpan.style.color = 'var(--text-muted)';
+        modelSpan.innerText = `(${p.model})`;
+        info.appendChild(modelSpan);
+
+        if (p.id === activeProfileId) {
+          const activeBadge = document.createElement('span');
+          activeBadge.className = 'user-status-badge active';
+          activeBadge.innerText = 'Active';
+          info.appendChild(activeBadge);
+        }
+
+        item.appendChild(info);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'user-actions';
+
+        if (p.id !== activeProfileId) {
+          const activateBtn = document.createElement('button');
+          activateBtn.className = 'user-action-btn toggle-activate';
+          activateBtn.innerText = '▶️ Activate';
+          activateBtn.onclick = async () => {
+            currentConfig.activeProfileId = p.id;
+            await saveConfigData();
+          };
+          actionsDiv.appendChild(activateBtn);
+        }
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'user-action-btn reset-pwd';
+        editBtn.innerText = '✏️ Edit';
+        editBtn.onclick = () => startEditProfile(p);
+        actionsDiv.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'user-action-btn delete-btn';
+        deleteBtn.innerText = '🗑️ Delete';
+        deleteBtn.onclick = () => handleDeleteProfile(p.id, p.name);
+        actionsDiv.appendChild(deleteBtn);
+
+        item.appendChild(actionsDiv);
+        container.appendChild(item);
+      });
+    }
+
+    function startEditProfile(profile) {
+      document.getElementById('editingProfileId').value = profile.id;
+      document.getElementById('profileName').value = profile.name;
+      document.getElementById('profileProvider').value = profile.provider;
+      document.getElementById('profileBaseURL').value = profile.baseURL || '';
+      document.getElementById('profileModel').value = profile.model;
+      document.getElementById('profileApiKey').value = ''; // Leave blank to not change unless typed
+      document.getElementById('profileFormTitle').innerText = 'Edit AI Profile';
+      document.getElementById('cancelProfileEditBtn').style.display = 'inline-flex';
+      
+      // Scroll form into view
+      document.getElementById('profileForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetProfileForm() {
+      document.getElementById('editingProfileId').value = '';
+      document.getElementById('profileName').value = '';
+      document.getElementById('profileProvider').value = 'huggingface';
+      document.getElementById('profileBaseURL').value = 'https://router.huggingface.co/v1';
+      document.getElementById('profileModel').value = '';
+      document.getElementById('profileApiKey').value = '';
+      document.getElementById('profileFormTitle').innerText = 'Create or Edit Profile';
+      document.getElementById('cancelProfileEditBtn').style.display = 'none';
+      onProviderChange();
+    }
+
+    async function handleSaveProfile(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('editingProfileId').value;
+      const name = document.getElementById('profileName').value.trim();
+      const provider = document.getElementById('profileProvider').value;
+      const baseURL = document.getElementById('profileBaseURL').value.trim();
+      const model = document.getElementById('profileModel').value.trim();
+      const apiKey = document.getElementById('profileApiKey').value;
+
+      if (!currentConfig.profiles) {
+        currentConfig.profiles = [];
+      }
+
+      if (id) {
+        // Edit existing
+        const index = currentConfig.profiles.findIndex(p => p.id === id);
+        if (index !== -1) {
+          // If apiKey is empty, retain the old API key
+          const existingKey = currentConfig.profiles[index].apiKey;
+          currentConfig.profiles[index] = {
+            id,
+            name,
+            provider,
+            baseURL,
+            model,
+            apiKey: apiKey ? apiKey : existingKey
+          };
+          showToast(`Profile "${name}" updated.`, 'success');
+        }
+      } else {
+        // Create new
+        const newProfile = {
+          id: Date.now().toString(),
+          name,
+          provider,
+          baseURL,
+          model,
+          apiKey
+        };
+        currentConfig.profiles.push(newProfile);
+        
+        // If it's the first profile, auto-activate it
+        if (!currentConfig.activeProfileId) {
+          currentConfig.activeProfileId = newProfile.id;
+        }
+        
+        showToast(`Profile "${name}" created.`, 'success');
+      }
+
+      resetProfileForm();
+      await saveConfigData();
+    }
+
+    async function handleDeleteProfile(id, name) {
+      if (!confirm(`Are you sure you want to delete AI Profile "${name}"?`)) {
+        return;
+      }
+
+      if (!currentConfig.profiles) return;
+
+      currentConfig.profiles = currentConfig.profiles.filter(p => p.id !== id);
+
+      // If active profile is deleted, revert to legacy default
+      if (currentConfig.activeProfileId === id) {
+        currentConfig.activeProfileId = '';
+      }
+
+      showToast(`Profile "${name}" deleted.`, 'success');
+      await saveConfigData();
     }
 
     /* ------------------------------------------------------------------ */

@@ -10,6 +10,8 @@ const DEFAULT_CONFIG = {
   commandCooldown: 5,
   chitchatLimitCount: 5,
   chitchatLimitWindow: 120,
+  profiles: [],
+  activeProfileId: "",
   systemPrompts: {
     activity: "Look at the last 3 messages and provide one-line activity highlights.",
     summary: "Look at the last 3 messages and provide a one-line TL;DR summary.",
