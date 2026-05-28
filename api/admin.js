@@ -1,4 +1,4 @@
-import { verifyToken, getChats, getUsers, saveUsers, hashPassword } from "./_db.js";
+import { verifyToken, getChats, getUsers, saveUsers, hashPassword, generateToken } from "./_db.js";
 
 async function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -226,9 +226,20 @@ export default async function handler(req, res) {
           return;
         }
 
-        users[index].passwordHash = hashPassword(newPassword);
+        const newHash = hashPassword(newPassword);
+        users[index].passwordHash = newHash;
         await saveUsers(users);
-        res.status(200).json({ success: true, message: `Password for ${targetUsername} updated successfully.` });
+
+        let newToken = null;
+        if (targetUsername.toLowerCase() === username.toLowerCase()) {
+          newToken = generateToken(targetUsername, newHash);
+        }
+
+        res.status(200).json({
+          success: true,
+          message: `Password for ${targetUsername} updated successfully.`,
+          newToken
+        });
         return;
       }
     }

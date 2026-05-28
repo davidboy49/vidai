@@ -1778,13 +1778,20 @@
           toggleBtn.innerText = u.isActive ? '⏸️ Deactivate' : '▶️ Activate';
           toggleBtn.onclick = () => handleToggleUser(u.username);
           actionsDiv.appendChild(toggleBtn);
+        }
 
+        // Reset password button allowed for any account that is NOT the fallback 'admin',
+        // or for the logged in user themselves (even if they are the fallback 'admin'!).
+        if (u.username.toLowerCase() !== 'admin' || u.username.toLowerCase() === currentUser.toLowerCase()) {
           const resetBtn = document.createElement('button');
           resetBtn.className = 'user-action-btn reset-pwd';
           resetBtn.innerText = '🔑 Reset';
           resetBtn.onclick = () => handleResetPassword(u.username);
           actionsDiv.appendChild(resetBtn);
+        }
 
+        // Delete action only for other accounts (not admin fallback and not self)
+        if (u.username.toLowerCase() !== 'admin' && u.username.toLowerCase() !== currentUser.toLowerCase()) {
           const deleteBtn = document.createElement('button');
           deleteBtn.className = 'user-action-btn delete-btn';
           deleteBtn.innerText = '🗑️ Delete';
@@ -1854,6 +1861,10 @@
 
         if (response.ok) {
           showToast(data.message || 'Password changed successfully.', 'success');
+          // If the password reset was for the current logged-in user, update their token
+          if (targetUsername.toLowerCase() === user.toLowerCase() && data.newToken) {
+            sessionStorage.setItem(TOKEN_KEY, data.newToken);
+          }
         } else {
           showToast(data.error || 'Failed to change password.', 'error');
         }
