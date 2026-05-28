@@ -9,7 +9,7 @@ const MAX_INPUT_CHARS = 3500;
 const MAX_RECENT_QUOTES = 10;
 const QUOTE_GENERATION_RETRIES = 4;
 const QUOTE_TRADITIONS = ["Greek", "Chinese", "Stoic"];
-const COMMAND_COOLDOWN_MS = 30_000; // 30 seconds between commands per chat
+const COMMAND_COOLDOWN_MS = 5_000; // 5 seconds between commands per chat
 
 const TRADITION_EMOJI = {
   Greek: "🏛",
