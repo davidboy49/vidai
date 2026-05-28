@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { getConfig } from "./_db.js";
+import { getConfig, registerChat } from "./_db.js";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                         */
@@ -551,6 +551,13 @@ export default async function handler(req, res) {
 
   const chatId = message.chat.id;
   const text = message.text?.trim();
+
+  // --- Register chat dynamically in database registry ---------------
+  const chatTitle = message.chat.title || message.chat.username || message.chat.first_name || `Chat ${chatId}`;
+  await registerChat(chatId, {
+    title: chatTitle,
+    type: message.chat.type
+  });
 
   if (!text) {
     res.status(200).send("No text message.");

@@ -10,14 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
+    /* Theme Tokens (Dark Mode Default) */
     :root {
       --bg-primary: #0b0f19;
       --bg-secondary: rgba(17, 24, 39, 0.7);
       --border-color: rgba(255, 255, 255, 0.08);
       --text-primary: #f3f4f6;
       --text-muted: #9ca3af;
+      --input-bg: rgba(0, 0, 0, 0.3);
       
-      /* Vibrant gradients */
+      /* Accent colors */
       --accent-teal: #06b6d4;
       --accent-purple: #a855f7;
       --accent-rose: #f43f5e;
@@ -26,6 +28,23 @@
       
       --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
       --glass-blur: blur(12px);
+    }
+
+    /* Light Mode Tokens override */
+    [data-theme="light"] {
+      --bg-primary: #f3f4f6;
+      --bg-secondary: rgba(255, 255, 255, 0.8);
+      --border-color: rgba(0, 0, 0, 0.08);
+      --text-primary: #111827;
+      --text-muted: #6b7280;
+      --input-bg: rgba(255, 255, 255, 0.9);
+      
+      --accent-teal: #0891b2;
+      --accent-purple: #8b5cf6;
+      
+      --gradient-primary: linear-gradient(135deg, #0891b2 0%, #8b5cf6 100%);
+      --gradient-glow: radial-gradient(circle, rgba(8, 145, 178, 0.05) 0%, transparent 100%);
+      --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
     }
 
     * {
@@ -43,6 +62,7 @@
       flex-direction: column;
       overflow-x: hidden;
       position: relative;
+      transition: background-color 0.4s ease, color 0.4s ease;
     }
 
     /* Ambient background glow */
@@ -65,18 +85,18 @@
       left: -10%;
       width: 50vw;
       height: 50vw;
-      background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.05) 0%, transparent 70%);
       z-index: 0;
       pointer-events: none;
     }
 
     header {
-      padding: 1.5rem 2rem;
+      padding: 1.25rem 2rem;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(11, 15, 25, 0.5);
+      background: rgba(11, 15, 25, 0.1);
       backdrop-filter: var(--glass-blur);
       z-index: 10;
     }
@@ -97,7 +117,28 @@
     header h1 span {
       background: initial;
       -webkit-text-fill-color: initial;
+      font-size: 1.1rem;
+    }
+
+    /* Theme Switcher Button */
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
       font-size: 1.2rem;
+    }
+
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--accent-teal);
     }
 
     .logout-btn {
@@ -132,7 +173,7 @@
 
     @media (min-width: 900px) {
       main {
-        grid-template-columns: 350px 1fr;
+        grid-template-columns: 380px 1fr;
       }
     }
 
@@ -146,8 +187,8 @@
       box-shadow: var(--card-shadow);
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-      transition: transform 0.3s ease, border-color 0.3s ease;
+      gap: 1.25rem;
+      transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.4s ease;
     }
 
     .card:hover {
@@ -181,7 +222,7 @@
     }
 
     .form-control {
-      background: rgba(0, 0, 0, 0.3);
+      background: var(--input-bg);
       border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 0.75rem 1rem;
@@ -195,7 +236,15 @@
     .form-control:focus {
       outline: none;
       border-color: var(--accent-teal);
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+      box-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+    }
+
+    select.form-control {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
     }
 
     .input-helper {
@@ -207,20 +256,20 @@
     .switch-list {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     .switch-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 0;
+      padding: 0.25rem 0;
     }
 
     .switch-label {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.2rem;
     }
 
     .switch-name {
@@ -238,6 +287,7 @@
       display: inline-block;
       width: 48px;
       height: 24px;
+      flex-shrink: 0;
     }
 
     .switch input {
@@ -253,7 +303,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(120, 120, 120, 0.2);
       transition: .4s;
       border-radius: 24px;
       border: 1px solid var(--border-color);
@@ -269,16 +319,12 @@
       background-color: white;
       transition: .4s;
       border-radius: 50%;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
     input:checked + .slider {
       background: var(--gradient-primary);
       border-color: transparent;
-    }
-
-    input:focus + .slider {
-      box-shadow: 0 0 1px #06b6d4;
     }
 
     input:checked + .slider::before {
@@ -290,7 +336,7 @@
       display: flex;
       border-bottom: 1px solid var(--border-color);
       overflow-x: auto;
-      gap: 0.5rem;
+      gap: 0.25rem;
       padding-bottom: 2px;
     }
 
@@ -327,7 +373,49 @@
       gap: 1rem;
     }
 
-    /* Main Save Buttons */
+    /* User Manager Panel */
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .user-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .user-delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--accent-rose);
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    .user-delete-btn:hover {
+      opacity: 1;
+    }
+
+    /* Buttons */
     .save-bar {
       grid-column: 1 / -1;
       display: flex;
@@ -350,18 +438,19 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      justify-content: center;
+      border: none;
     }
 
     .btn-primary {
       background: var(--gradient-primary);
       color: white;
-      border: none;
-      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
     }
 
     .btn-primary:active {
@@ -378,6 +467,17 @@
       background: rgba(255, 255, 255, 0.05);
     }
 
+    .btn-danger {
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid var(--accent-rose);
+      color: var(--accent-rose);
+    }
+
+    .btn-danger:hover {
+      background: var(--accent-rose);
+      color: white;
+    }
+
     /* Login Modal Overlay */
     .login-overlay {
       position: fixed;
@@ -386,7 +486,7 @@
       right: 0;
       bottom: 0;
       background: rgba(7, 10, 18, 0.95);
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(25px);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -404,7 +504,7 @@
     .login-card {
       width: 100%;
       max-width: 400px;
-      background: rgba(17, 24, 39, 0.8);
+      background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 20px;
       padding: 2.5rem;
@@ -412,7 +512,6 @@
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      text-align: center;
       animation: scaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
@@ -421,12 +520,14 @@
       background: var(--gradient-primary);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      text-align: center;
     }
 
     .login-card h2 {
       font-family: 'Outfit', sans-serif;
       font-size: 1.75rem;
       font-weight: 800;
+      text-align: center;
     }
 
     /* Toast Notification */
@@ -441,9 +542,9 @@
     }
 
     .toast {
-      background: rgba(17, 24, 39, 0.9);
+      background: rgba(17, 24, 39, 0.95);
       border: 1px solid var(--border-color);
-      color: var(--text-primary);
+      color: #f3f4f6;
       padding: 1rem 1.5rem;
       border-radius: 12px;
       box-shadow: var(--card-shadow);
@@ -481,7 +582,7 @@
       to { transform: scale(1); opacity: 1; }
     }
 
-    /* Stats Indicator */
+    /* Status Indicator */
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -510,13 +611,16 @@
   <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
       <div class="login-icon">🔒</div>
-      <h2>Vidai Bot</h2>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Please enter the administrator password to manage features.</p>
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group" style="margin-bottom: 1rem;">
-          <input type="password" id="adminPasswordInput" class="form-control" placeholder="Admin Password" required autofocus>
+      <h2>Vidai Bot Login</h2>
+      <p style="color: var(--text-muted); font-size: 0.875rem; text-align: center;">Enter your credentials to access configuration panel.</p>
+      <form id="loginForm" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="form-group">
+          <input type="text" id="adminUsernameInput" class="form-control" placeholder="Username" required autofocus>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Unlock Dashboard</button>
+        <div class="form-group">
+          <input type="password" id="adminPasswordInput" class="form-control" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Unlock Dashboard</button>
       </form>
     </div>
   </div>
@@ -525,20 +629,40 @@
   <header>
     <h1>Vidai Bot <span>Control Panel</span></h1>
     <div style="display: flex; align-items: center; gap: 1rem;">
-      <div class="status-badge connected">Database Connected</div>
+      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">☀️</button>
+      <div class="status-badge connected">Live</div>
       <button class="logout-btn" onclick="handleLogout()">Lock Panel</button>
     </div>
   </header>
 
   <!-- Content -->
-  <main id="mainDashboard" style="opacity: 0; transition: opacity 0.5s ease;">
+  <main id="mainDashboard" style="opacity: 0; display: none;">
     
-    <!-- Sidebar: Limits & Toggles -->
+    <!-- Sidebar: Broadcast, Features & Permissions -->
     <div style="display: flex; flex-direction: column; gap: 2rem;">
+      
+      <!-- Broadcast Card -->
+      <div class="card">
+        <h2 class="card-title">💬 Bot Broadcast <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Send Message</span></h2>
+        <form onsubmit="sendBroadcastMessage(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="form-group">
+            <label for="broadcastChatSelect">Target Chat / Group</label>
+            <select id="broadcastChatSelect" class="form-control" required>
+              <option value="">-- Select Chat --</option>
+            </select>
+            <span class="input-helper">Fetches groups the bot has seen active.</span>
+          </div>
+          <div class="form-group">
+            <label for="broadcastMessageText">Message Content</label>
+            <textarea id="broadcastMessageText" class="form-control" style="min-height: 80px; resize: vertical;" placeholder="Type broadcast message..." required></textarea>
+          </div>
+          <button type="submit" id="broadcastSendBtn" class="btn btn-primary" style="width: 100%;">Send Message</button>
+        </form>
+      </div>
       
       <!-- Feature Toggles -->
       <div class="card">
-        <h2 class="card-title">Bot Features <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Active Toggles</span></h2>
+        <h2 class="card-title">⚙️ Bot Features <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Active Toggles</span></h2>
         <div class="switch-list">
           
           <div class="switch-item">
@@ -599,7 +723,7 @@
           <div class="switch-item">
             <div class="switch-label">
               <span class="switch-name">Philosophy Quotes (/quote)</span>
-              <span class="switch-desc">Random Stoic/Greek/Chinese quotes</span>
+              <span class="switch-desc">Philosophy quote commands</span>
             </div>
             <label class="switch">
               <input type="checkbox" id="toggle-quote" checked>
@@ -612,12 +736,12 @@
 
       <!-- Access Control Settings -->
       <div class="card">
-        <h2 class="card-title">Permissions</h2>
+        <h2 class="card-title">🔒 Permissions</h2>
         
         <div class="switch-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
           <div class="switch-label">
             <span class="switch-name">Restrict to Admins</span>
-            <span class="switch-desc">Only group admins can use the bot</span>
+            <span class="switch-desc">Only group admins can use commands</span>
           </div>
           <label class="switch">
             <input type="checkbox" id="restrictToAdmins">
@@ -628,24 +752,23 @@
         <div class="form-group">
           <label for="allowedUserIds">Whitelist User IDs</label>
           <input type="text" id="allowedUserIds" class="form-control" placeholder="e.g. 1234567, 9876543">
-          <span class="input-helper">Comma-separated Telegram user IDs. Leave empty to allow all users.</span>
+          <span class="input-helper">Comma-separated user IDs. Leave empty to allow all users.</span>
         </div>
       </div>
 
     </div>
 
-    <!-- Main Panel: Model & Prompts -->
+    <!-- Main Panel: Model, Prompts & User Management -->
     <div style="display: flex; flex-direction: column; gap: 2rem;">
       
       <!-- General parameters -->
       <div class="card">
-        <h2 class="card-title">Model & Performance</h2>
+        <h2 class="card-title">🤖 Model & Performance</h2>
         <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
           
           <div class="form-group">
             <label for="hfModel">Hugging Face Model Router Path</label>
             <input type="text" id="hfModel" class="form-control" placeholder="mistralai/Mistral-7B-Instruct-v0.2:featherless-ai">
-            <span class="input-helper">The model identifier used via HF router API.</span>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
@@ -656,15 +779,13 @@
             </div>
 
             <div class="form-group">
-              <label for="chitchatLimitCount">Chit-Chat Cooldown Limit</label>
+              <label for="chitchatLimitCount">Chit-Chat Msg Limit</label>
               <input type="number" id="chitchatLimitCount" class="form-control" min="1" placeholder="5">
-              <span class="input-helper">Messages count threshold</span>
             </div>
 
             <div class="form-group">
-              <label for="chitchatLimitWindow">Chit-Chat Cooldown Window (s)</label>
+              <label for="chitchatLimitWindow">Limit Window (s)</label>
               <input type="number" id="chitchatLimitWindow" class="form-control" min="1" placeholder="120">
-              <span class="input-helper">Time window to trigger Khmer joke</span>
             </div>
 
           </div>
@@ -673,8 +794,8 @@
       </div>
 
       <!-- Prompts Editor -->
-      <div class="card" style="flex: 1;">
-        <h2 class="card-title">Dynamic System Prompts</h2>
+      <div class="card">
+        <h2 class="card-title">🎭 Dynamic System Prompts</h2>
         
         <div class="tabs-header" id="promptTabs">
           <button class="tab-btn active" onclick="switchPromptTab('chitchat')">Chit-Chat</button>
@@ -682,48 +803,48 @@
           <button class="tab-btn" onclick="switchPromptTab('activity')">Activity</button>
           <button class="tab-btn" onclick="switchPromptTab('mood')">Mood</button>
           <button class="tab-btn" onclick="switchPromptTab('roast')">Roast</button>
-          <button class="tab-btn" onclick="switchPromptTab('quote')">Philosophy Quotes</button>
+          <button class="tab-btn" onclick="switchPromptTab('quote')">Quotes</button>
         </div>
 
-        <div id="prompts-container">
+        <div id="prompts-container" style="margin-top: 0.5rem;">
           
           <!-- Chit Chat Tab -->
           <div id="tab-chitchat" class="tab-content active">
-            <div class="form-group" style="height: 100%;">
-              <label for="prompt-chitchat">Chit-Chat Personality & Guidelines</label>
-              <textarea id="prompt-chitchat" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+            <div class="form-group">
+              <label for="prompt-chitchat">Chit-Chat Instructions</label>
+              <textarea id="prompt-chitchat" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
             </div>
           </div>
 
           <!-- Summary Tab -->
           <div id="tab-summary" class="tab-content">
             <div class="form-group">
-              <label for="prompt-summary">Summary Style instructions</label>
-              <textarea id="prompt-summary" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+              <label for="prompt-summary">Summary Formatting guidelines</label>
+              <textarea id="prompt-summary" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
             </div>
           </div>
 
           <!-- Activity Tab -->
           <div id="tab-activity" class="tab-content">
             <div class="form-group">
-              <label for="prompt-activity">Activity Highlights guidelines</label>
-              <textarea id="prompt-activity" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+              <label for="prompt-activity">Activity highlights guidelines</label>
+              <textarea id="prompt-activity" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
             </div>
           </div>
 
           <!-- Mood Tab -->
           <div id="tab-mood" class="tab-content">
             <div class="form-group">
-              <label for="prompt-mood">Sentiment mood instructions</label>
-              <textarea id="prompt-mood" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+              <label for="prompt-mood">Sentiment analysis instructions</label>
+              <textarea id="prompt-mood" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
             </div>
           </div>
 
           <!-- Roast Tab -->
           <div id="tab-roast" class="tab-content">
             <div class="form-group">
-              <label for="prompt-roast">Roasting Instructions & Safety levels</label>
-              <textarea id="prompt-roast" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+              <label for="prompt-roast">Roasting Instructions</label>
+              <textarea id="prompt-roast" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
             </div>
           </div>
 
@@ -731,19 +852,48 @@
           <div id="tab-quote" class="tab-content">
             <div class="form-group">
               <label for="prompt-quote">Philosophical quotes template formatting</label>
-              <textarea id="prompt-quote" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;" placeholder="Leave blank to use internal default logic..."></textarea>
+              <textarea id="prompt-quote" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
             </div>
           </div>
 
         </div>
       </div>
 
+      <!-- User Management Card -->
+      <div class="card">
+        <h2 class="card-title">🔑 Dashboard User Accounts</h2>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+          
+          <div class="form-group">
+            <label>Registered Administrators</label>
+            <div id="userListContainer" class="user-list">
+              <!-- Populated dynamically -->
+              <div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">Loading users...</div>
+            </div>
+          </div>
+
+          <form onsubmit="handleSaveUser(event)" style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+            <span style="font-size: 0.875rem; font-weight: 700;">Add or Update Account Password</span>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <input type="text" id="targetUsername" class="form-control" placeholder="Username" required>
+              </div>
+              <div class="form-group">
+                <input type="password" id="targetPassword" class="form-control" placeholder="Password" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-secondary" style="width: fit-content; align-self: flex-end;">Save Account</button>
+          </form>
+
+        </div>
+      </div>
+
     </div>
 
-    <!-- Floating/Bottom Save Bar -->
+    <!-- Floating Save Bar -->
     <div class="save-bar">
       <button class="btn btn-secondary" onclick="fetchConfigData()">Discard Changes</button>
-      <button class="btn btn-primary" onclick="saveConfigData()">Save Changes</button>
+      <button class="btn btn-primary" onclick="saveConfigData()">Save Settings</button>
     </div>
 
   </main>
@@ -754,14 +904,43 @@
   <!-- Business Logic JS -->
   <script>
     let currentConfig = {};
-    const STORAGE_KEY = 'vidai_admin_password';
+    const USERNAME_KEY = 'vidai_admin_username';
+    const TOKEN_KEY = 'vidai_admin_token';
+
+    // Theme Switcher Initialization
+    (function initTheme() {
+      const storedTheme = localStorage.getItem('theme');
+      if (storedTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.getElementById('themeToggleBtn').innerText = '🌙';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        document.getElementById('themeToggleBtn').innerText = '☀️';
+      }
+    })();
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const toggleBtn = document.getElementById('themeToggleBtn');
+      if (currentTheme === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+        toggleBtn.innerText = '☀️';
+        showToast('Switched to Dark Mode', 'success');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        toggleBtn.innerText = '🌙';
+        showToast('Switched to Light Mode', 'success');
+      }
+    }
 
     // Run on page load
     window.onload = function() {
-      const storedPass = sessionStorage.getItem(STORAGE_KEY);
-      if (storedPass) {
-        showDashboard();
-        fetchConfigData();
+      const storedUser = sessionStorage.getItem(USERNAME_KEY);
+      const storedToken = sessionStorage.getItem(TOKEN_KEY);
+      if (storedUser && storedToken) {
+        verifySession(storedUser, storedToken);
       } else {
         showLogin();
       }
@@ -770,43 +949,92 @@
     function showLogin() {
       document.getElementById('loginOverlay').classList.add('active');
       document.getElementById('mainDashboard').style.opacity = '0';
+      document.getElementById('mainDashboard').style.display = 'none';
     }
 
     function showDashboard() {
       document.getElementById('loginOverlay').classList.remove('active');
       const dash = document.getElementById('mainDashboard');
-      dash.style.opacity = '1';
       dash.style.display = 'grid';
+      setTimeout(() => {
+        dash.style.opacity = '1';
+      }, 50);
     }
 
-    function handleLogin(e) {
+    async function verifySession(username, token) {
+      try {
+        const response = await fetch('/api/auth?action=verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-User': username,
+            'X-Admin-Token': token
+          }
+        });
+        if (response.ok) {
+          showDashboard();
+          fetchConfigData();
+          fetchChatsData();
+          fetchUsersData();
+        } else {
+          sessionStorage.clear();
+          showLogin();
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Connection to server lost.', 'error');
+        showLogin();
+      }
+    }
+
+    async function handleLogin(e) {
       e.preventDefault();
-      const pass = document.getElementById('adminPasswordInput').value;
-      if (pass) {
-        sessionStorage.setItem(STORAGE_KEY, pass);
-        showDashboard();
-        fetchConfigData();
+      const username = document.getElementById('adminUsernameInput').value.trim();
+      const password = document.getElementById('adminPasswordInput').value;
+
+      try {
+        const response = await fetch('/api/auth?action=login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          sessionStorage.setItem(USERNAME_KEY, data.username);
+          sessionStorage.setItem(TOKEN_KEY, data.token);
+          
+          showToast('Access Unlocked', 'success');
+          showDashboard();
+          fetchConfigData();
+          fetchChatsData();
+          fetchUsersData();
+        } else {
+          const data = await response.json();
+          showToast(data.error || 'Incorrect username or password', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Login connection failed', 'error');
       }
     }
 
     function handleLogout() {
-      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.clear();
+      document.getElementById('adminUsernameInput').value = '';
       document.getElementById('adminPasswordInput').value = '';
       showLogin();
-      showToast('Dashboard locked successfully', 'success');
+      showToast('Dashboard locked', 'success');
     }
 
     // Tab switcher
     function switchPromptTab(tabId) {
-      // Deactivate all tab header buttons
       const buttons = document.querySelectorAll('#promptTabs .tab-btn');
       buttons.forEach(btn => btn.classList.remove('active'));
       
-      // Deactivate all tab contents
       const contents = document.querySelectorAll('#prompts-container .tab-content');
       contents.forEach(content => content.classList.remove('active'));
 
-      // Find and activate requested tab
       const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
       if (clickedBtn) clickedBtn.classList.add('active');
 
@@ -814,7 +1042,7 @@
       if (targetContent) targetContent.classList.add('active');
     }
 
-    // Toast notification manager
+    // Toast notifications
     function showToast(message, type = 'success') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -825,12 +1053,10 @@
       
       container.appendChild(toast);
       
-      // Force repaint to trigger CSS animation
       setTimeout(() => {
         toast.classList.add('active');
       }, 50);
 
-      // Remove after 4 seconds
       setTimeout(() => {
         toast.classList.remove('active');
         setTimeout(() => toast.remove(), 400);
@@ -839,35 +1065,35 @@
 
     // Get config from server
     async function fetchConfigData() {
-      const pass = sessionStorage.getItem(STORAGE_KEY);
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+      
       try {
         const response = await fetch('/api/config', {
           headers: {
-            'X-Admin-Password': pass
+            'X-Admin-User': user,
+            'X-Admin-Token': token
           }
         });
 
         if (response.status === 401) {
-          showToast('Invalid admin password. Please try locking & logging in again.', 'error');
+          showToast('Session expired.', 'error');
           handleLogout();
           return;
         }
 
-        if (!response.ok) {
-          throw new Error('Server returned error status ' + response.status);
-        }
+        if (!response.ok) throw new Error('Status ' + response.status);
 
         const data = await response.json();
         currentConfig = data;
         populateForm(data);
-        showToast('Configuration loaded successfully', 'success');
       } catch (err) {
         console.error('Fetch error:', err);
-        showToast('Failed to load configuration from server', 'error');
+        showToast('Failed to load configurations', 'error');
       }
     }
 
-    // Populate UI fields from loaded data
+    // Populate UI inputs from configs
     function populateForm(data) {
       document.getElementById('hfModel').value = data.hfModel || '';
       document.getElementById('restrictToAdmins').checked = !!data.restrictToAdmins;
@@ -876,9 +1102,7 @@
       document.getElementById('chitchatLimitCount').value = data.chitchatLimitCount ?? 5;
       document.getElementById('chitchatLimitWindow').value = data.chitchatLimitWindow ?? 120;
       
-      // Feature switches
       const disabledFeatures = data.disabledFeatures || [];
-      
       const features = ['chitchat', 'summary', 'activity', 'mood', 'roast', 'quote'];
       features.forEach(f => {
         const toggle = document.getElementById(`toggle-${f}`);
@@ -887,7 +1111,6 @@
         }
       });
 
-      // Prompts
       const prompts = data.systemPrompts || {};
       features.forEach(f => {
         const txt = document.getElementById(`prompt-${f}`);
@@ -897,11 +1120,11 @@
       });
     }
 
-    // Save configuration back to server
+    // Save configurations back to server
     async function saveConfigData() {
-      const pass = sessionStorage.getItem(STORAGE_KEY);
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
       
-      // Read feature switches to find disabled features
       const disabledFeatures = [];
       const features = ['chitchat', 'summary', 'activity', 'mood', 'roast', 'quote'];
       features.forEach(f => {
@@ -911,12 +1134,11 @@
         }
       });
 
-      // Read prompts values
       const systemPrompts = {};
       features.forEach(f => {
         const txt = document.getElementById(`prompt-${f}`);
         if (txt) {
-          systemPrompts[f] = txt.value;
+          systemPrompts[f] = txt.value.trim();
         }
       });
 
@@ -936,26 +1158,245 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Admin-Password': pass
+            'X-Admin-User': user,
+            'X-Admin-Token': token
           },
           body: JSON.stringify(updatedConfig)
         });
 
         if (response.status === 401) {
-          showToast('Session expired or incorrect credentials.', 'error');
+          showToast('Session expired.', 'error');
           handleLogout();
           return;
         }
 
-        if (!response.ok) {
-          throw new Error('Save error ' + response.status);
+        if (response.ok) {
+          currentConfig = updatedConfig;
+          showToast('Configurations successfully applied!', 'success');
+        } else {
+          showToast('Failed to save settings', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Connection error during save', 'error');
+      }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Chat & Broadcast API                                              */
+    /* ------------------------------------------------------------------ */
+
+    async function fetchChatsData() {
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+      
+      try {
+        const response = await fetch('/api/admin?action=chats', {
+          headers: {
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          }
+        });
+
+        if (response.ok) {
+          const chats = await response.json();
+          populateChatsDropdown(chats);
+        }
+      } catch (err) {
+        console.error('Error fetching chats:', err);
+      }
+    }
+
+    function populateChatsDropdown(chats) {
+      const select = document.getElementById('broadcastChatSelect');
+      
+      // Preserve first "select" option
+      select.innerHTML = '<option value="">-- Select Chat --</option>';
+      
+      Object.keys(chats).forEach(chatId => {
+        const chat = chats[chatId];
+        const option = document.createElement('option');
+        option.value = chatId;
+        
+        // E.g., "My Group (Supergroup)"
+        const typeStr = chat.type ? ` (${chat.type})` : '';
+        option.innerText = `${chat.title}${typeStr}`;
+        
+        select.appendChild(option);
+      });
+    }
+
+    async function sendBroadcastMessage(e) {
+      e.preventDefault();
+      
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+      
+      const chatId = document.getElementById('broadcastChatSelect').value;
+      const text = document.getElementById('broadcastMessageText').value.trim();
+      const sendBtn = document.getElementById('broadcastSendBtn');
+
+      if (!chatId || !text) return;
+
+      sendBtn.innerText = 'Sending Broadcast...';
+      sendBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/admin?action=send-message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          },
+          body: JSON.stringify({ chatId, text })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast('Message broadcasted successfully!', 'success');
+          document.getElementById('broadcastMessageText').value = '';
+        } else {
+          showToast(data.error || 'Failed to send broadcast.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Broadcast connection failure.', 'error');
+      } finally {
+        sendBtn.innerText = 'Send Message';
+        sendBtn.disabled = false;
+      }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  User Management API                                               */
+    /* ------------------------------------------------------------------ */
+
+    async function fetchUsersData() {
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+      
+      try {
+        const response = await fetch('/api/admin?action=users', {
+          headers: {
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          }
+        });
+
+        if (response.ok) {
+          const users = await response.json();
+          renderUsersList(users);
+        }
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    }
+
+    function renderUsersList(users) {
+      const container = document.getElementById('userListContainer');
+      container.innerHTML = '';
+      
+      const currentUser = sessionStorage.getItem(USERNAME_KEY);
+
+      if (users.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">No administrators configured.</div>';
+        return;
+      }
+
+      users.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'user-item';
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'user-name';
+        nameSpan.innerText = u.username;
+        if (u.username.toLowerCase() === currentUser.toLowerCase()) {
+          nameSpan.innerHTML += ' <span style="font-size: 0.75rem; color: var(--accent-teal); font-weight: normal;">(You)</span>';
+        }
+        
+        item.appendChild(nameSpan);
+
+        // Render delete button only if it's not the default admin fallback and not the current user
+        if (u.username.toLowerCase() !== 'admin' && u.username.toLowerCase() !== currentUser.toLowerCase()) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'user-delete-btn';
+          deleteBtn.innerText = '🗑️ Delete';
+          deleteBtn.onclick = () => handleDeleteUser(u.username);
+          item.appendChild(deleteBtn);
         }
 
-        currentConfig = updatedConfig;
-        showToast('Configurations successfully saved & applied!', 'success');
+        container.appendChild(item);
+      });
+    }
+
+    async function handleSaveUser(e) {
+      e.preventDefault();
+      
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+      
+      const targetUsername = document.getElementById('targetUsername').value.trim();
+      const targetPassword = document.getElementById('targetPassword').value;
+
+      try {
+        const response = await fetch('/api/admin?action=save-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          },
+          body: JSON.stringify({ targetUsername, targetPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast(data.message || 'User successfully updated!', 'success');
+          document.getElementById('targetUsername').value = '';
+          document.getElementById('targetPassword').value = '';
+          fetchUsersData();
+        } else {
+          showToast(data.error || 'Failed to save user.', 'error');
+        }
       } catch (err) {
-        console.error('Save error:', err);
-        showToast('Failed to save settings to server', 'error');
+        console.error(err);
+        showToast('User connection failure.', 'error');
+      }
+    }
+
+    async function handleDeleteUser(targetUsername) {
+      if (!confirm(`Are you sure you want to delete administrator account: ${targetUsername}?`)) {
+        return;
+      }
+
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+
+      try {
+        const response = await fetch('/api/admin?action=delete-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          },
+          body: JSON.stringify({ targetUsername })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast(data.message || 'User successfully deleted!', 'success');
+          fetchUsersData();
+        } else {
+          showToast(data.error || 'Failed to delete user.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('User deletion failure.', 'error');
       }
     }
   </script>

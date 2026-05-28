@@ -1,4 +1,4 @@
-import { getConfig, saveConfig } from "./_db.js";
+import { getConfig, saveConfig, verifyToken } from "./_db.js";
 
 async function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -26,7 +26,7 @@ async function parseBody(req) {
 export default async function handler(req, res) {
   // Set CORS headers for the dashboard (especially if running in different dev ports)
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Admin-Password, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Admin-User, X-Admin-Token, Authorization");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
   if (req.method === "OPTIONS") {
@@ -35,11 +35,12 @@ export default async function handler(req, res) {
   }
 
   // Authentication check
-  const adminPassword = process.env.ADMIN_PASSWORD || "admin";
-  const providedPassword = req.headers["x-admin-password"] || req.headers["authorization"];
+  const username = req.headers["x-admin-user"];
+  const token = req.headers["x-admin-token"];
 
-  if (providedPassword !== adminPassword) {
-    res.status(401).json({ error: "Unauthorized. Incorrect admin password." });
+  const isAuthorized = await verifyToken(username, token);
+  if (!isAuthorized) {
+    res.status(401).json({ error: "Unauthorized. Invalid admin session." });
     return;
   }
 
