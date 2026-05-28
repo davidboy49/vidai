@@ -603,6 +603,73 @@
       border-radius: 50%;
       box-shadow: 0 0 8px var(--accent-teal);
     }
+
+    /* User Status Badges and Action Buttons */
+    .user-status-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      margin-left: 0.5rem;
+    }
+    .user-status-badge.active {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-teal);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    .user-status-badge.inactive {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+    .user-actions {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+    }
+    .user-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      transition: all 0.2s ease;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      border: 1px solid transparent;
+    }
+    .user-action-btn:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+    .user-action-btn.toggle-deactivate:hover {
+      color: var(--accent-rose);
+      background: rgba(244, 63, 94, 0.1);
+      border-color: rgba(244, 63, 94, 0.2);
+    }
+    .user-action-btn.toggle-activate:hover {
+      color: var(--accent-teal);
+      background: rgba(6, 182, 212, 0.1);
+      border-color: rgba(6, 182, 212, 0.2);
+    }
+    .user-action-btn.reset-pwd:hover {
+      color: var(--accent-purple);
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.2);
+    }
+    .user-action-btn.delete-btn:hover {
+      color: var(--accent-rose);
+      background: rgba(244, 63, 94, 0.1);
+      border-color: rgba(244, 63, 94, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -656,8 +723,15 @@
             <label for="broadcastChatSelect">Target Chat / Group</label>
             <select id="broadcastChatSelect" class="form-control" required>
               <option value="">-- Select Chat --</option>
+              <option value="manual">-- Enter Chat ID manually --</option>
             </select>
-            <span class="input-helper">Fetches groups the bot has seen active.</span>
+            <span class="input-helper">Select a group seen by the bot or type ID manually.</span>
+          </div>
+          <!-- Manual Chat ID Input (Hidden by default) -->
+          <div class="form-group" id="manualChatIdGroup" style="display: none; animation: fadeIn 0.3s ease;">
+            <label for="broadcastManualChatId">Custom Chat ID / User ID</label>
+            <input type="text" id="broadcastManualChatId" class="form-control" placeholder="e.g. -100123456789 or 9876543">
+            <span class="input-helper">Numeric ID (usually starts with a minus sign for groups).</span>
           </div>
           <div class="form-group">
             <label for="broadcastMessageText">Message Content</label>
@@ -1243,18 +1317,40 @@
       }
     }
 
+    // Toggle manual Chat ID field visibility on selection change
+    document.addEventListener('DOMContentLoaded', () => {
+      const select = document.getElementById('broadcastChatSelect');
+      if (select) {
+        select.addEventListener('change', function() {
+          const manualGroup = document.getElementById('manualChatIdGroup');
+          const manualInput = document.getElementById('broadcastManualChatId');
+          if (manualGroup && manualInput) {
+            if (this.value === 'manual') {
+              manualGroup.style.display = 'flex';
+              manualInput.required = true;
+            } else {
+              manualGroup.style.display = 'none';
+              manualInput.required = false;
+            }
+          }
+        });
+      }
+    });
+
     function populateChatsDropdown(chats) {
       const select = document.getElementById('broadcastChatSelect');
+      if (!select) return;
       
-      // Preserve first "select" option
-      select.innerHTML = '<option value="">-- Select Chat --</option>';
+      select.innerHTML = `
+        <option value="">-- Select Chat --</option>
+        <option value="manual">-- Enter Chat ID manually --</option>
+      `;
       
       Object.keys(chats).forEach(chatId => {
         const chat = chats[chatId];
         const option = document.createElement('option');
         option.value = chatId;
         
-        // E.g., "My Group (Supergroup)"
         const typeStr = chat.type ? ` (${chat.type})` : '';
         option.innerText = `${chat.title}${typeStr}`;
         
@@ -1268,7 +1364,11 @@
       const user = sessionStorage.getItem(USERNAME_KEY);
       const token = sessionStorage.getItem(TOKEN_KEY);
       
-      const chatId = document.getElementById('broadcastChatSelect').value;
+      let chatId = document.getElementById('broadcastChatSelect').value;
+      if (chatId === 'manual') {
+        chatId = document.getElementById('broadcastManualChatId').value.trim();
+      }
+      
       const text = document.getElementById('broadcastMessageText').value.trim();
       const sendBtn = document.getElementById('broadcastSendBtn');
 
@@ -1345,26 +1445,119 @@
         const item = document.createElement('div');
         item.className = 'user-item';
         
+        const userInfo = document.createElement('div');
+        userInfo.style.display = 'flex';
+        userInfo.style.alignItems = 'center';
+        userInfo.style.gap = '0.5rem';
+
         const nameSpan = document.createElement('span');
         nameSpan.className = 'user-name';
         nameSpan.innerText = u.username;
         if (u.username.toLowerCase() === currentUser.toLowerCase()) {
           nameSpan.innerHTML += ' <span style="font-size: 0.75rem; color: var(--accent-teal); font-weight: normal;">(You)</span>';
         }
-        
-        item.appendChild(nameSpan);
+        userInfo.appendChild(nameSpan);
 
-        // Render delete button only if it's not the default admin fallback and not the current user
+        const statusBadge = document.createElement('span');
+        statusBadge.className = 'user-status-badge ' + (u.isActive ? 'active' : 'inactive');
+        statusBadge.innerText = u.isActive ? 'Active' : 'Inactive';
+        userInfo.appendChild(statusBadge);
+
+        item.appendChild(userInfo);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'user-actions';
+
+        // Actions only for other accounts (not admin fallback and not self)
         if (u.username.toLowerCase() !== 'admin' && u.username.toLowerCase() !== currentUser.toLowerCase()) {
+          const toggleBtn = document.createElement('button');
+          toggleBtn.className = 'user-action-btn ' + (u.isActive ? 'toggle-deactivate' : 'toggle-activate');
+          toggleBtn.innerText = u.isActive ? '⏸️ Deactivate' : '▶️ Activate';
+          toggleBtn.onclick = () => handleToggleUser(u.username);
+          actionsDiv.appendChild(toggleBtn);
+
+          const resetBtn = document.createElement('button');
+          resetBtn.className = 'user-action-btn reset-pwd';
+          resetBtn.innerText = '🔑 Reset';
+          resetBtn.onclick = () => handleResetPassword(u.username);
+          actionsDiv.appendChild(resetBtn);
+
           const deleteBtn = document.createElement('button');
-          deleteBtn.className = 'user-delete-btn';
+          deleteBtn.className = 'user-action-btn delete-btn';
           deleteBtn.innerText = '🗑️ Delete';
           deleteBtn.onclick = () => handleDeleteUser(u.username);
-          item.appendChild(deleteBtn);
+          actionsDiv.appendChild(deleteBtn);
         }
 
+        item.appendChild(actionsDiv);
         container.appendChild(item);
       });
+    }
+
+    async function handleToggleUser(targetUsername) {
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+
+      try {
+        const response = await fetch('/api/admin?action=toggle-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          },
+          body: JSON.stringify({ targetUsername })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast(data.message || 'Status updated successfully.', 'success');
+          fetchUsersData();
+        } else {
+          showToast(data.error || 'Failed to update user status.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Connection error updating user status.', 'error');
+      }
+    }
+
+    async function handleResetPassword(targetUsername) {
+      const newPassword = prompt(`Enter new password for user "${targetUsername}":`);
+      if (newPassword === null) {
+        return; // User cancelled
+      }
+      if (newPassword.trim() === '') {
+        showToast('Password cannot be empty.', 'error');
+        return;
+      }
+
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+
+      try {
+        const response = await fetch('/api/admin?action=change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          },
+          body: JSON.stringify({ targetUsername, newPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast(data.message || 'Password changed successfully.', 'success');
+        } else {
+          showToast(data.error || 'Failed to change password.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Connection error resetting password.', 'error');
+      }
     }
 
     async function handleSaveUser(e) {

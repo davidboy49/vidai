@@ -58,7 +58,10 @@ export default async function handler(req, res) {
       if (action === "users") {
         const users = await getUsers();
         // Map to sanitize and hide password hashes
-        const sanitized = users.map((u) => ({ username: u.username }));
+        const sanitized = users.map((u) => ({
+          username: u.username,
+          isActive: u.isActive !== false
+        }));
         res.status(200).json(sanitized);
         return;
       }
@@ -121,7 +124,7 @@ export default async function handler(req, res) {
           users[index].passwordHash = passwordHash;
         } else {
           // Add new account
-          users.push({ username: targetUsername, passwordHash });
+          users.push({ username: targetUsername, passwordHash, isActive: true });
         }
 
         await saveUsers(users);
@@ -162,6 +165,70 @@ export default async function handler(req, res) {
 
         await saveUsers(filtered);
         res.status(200).json({ success: true, message: `Account for ${targetUsername} successfully removed.` });
+        return;
+      }
+
+      // 4. Toggle account active/inactive status
+      if (action === "toggle-user") {
+        if (!body || !body.targetUsername) {
+          res.status(400).json({ error: "targetUsername is required." });
+          return;
+        }
+
+        const { targetUsername } = body;
+
+        if (targetUsername.toLowerCase() === username.toLowerCase()) {
+          res.status(400).json({ error: "You cannot deactivate your own account." });
+          return;
+        }
+
+        if (targetUsername.toLowerCase() === "admin") {
+          res.status(400).json({ error: "The default 'admin' account cannot be deactivated." });
+          return;
+        }
+
+        const users = await getUsers();
+        const index = users.findIndex(
+          (u) => u.username.toLowerCase() === targetUsername.toLowerCase()
+        );
+
+        if (index === -1) {
+          res.status(404).json({ error: "User account not found." });
+          return;
+        }
+
+        const currentStatus = users[index].isActive !== false;
+        users[index].isActive = !currentStatus;
+
+        await saveUsers(users);
+        res.status(200).json({
+          success: true,
+          message: `Account for ${targetUsername} set to ${users[index].isActive ? "Active" : "Inactive"}.`
+        });
+        return;
+      }
+
+      // 5. Change user password directly
+      if (action === "change-password") {
+        if (!body || !body.targetUsername || !body.newPassword) {
+          res.status(400).json({ error: "targetUsername and newPassword are required." });
+          return;
+        }
+
+        const { targetUsername, newPassword } = body;
+        const users = await getUsers();
+        const index = users.findIndex(
+          (u) => u.username.toLowerCase() === targetUsername.toLowerCase()
+        );
+
+        if (index === -1) {
+          res.status(404).json({ error: "User account not found." });
+          return;
+        }
+
+        users[index].passwordHash = hashPassword(newPassword);
+        await saveUsers(users);
+        res.status(200).json({ success: true, message: `Password for ${targetUsername} updated successfully.` });
         return;
       }
     }

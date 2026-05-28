@@ -581,6 +581,11 @@ export default async function handler(req, res) {
 
   // --- Feature disabled check ----------------------------------------
   if (commandType && isFeatureDisabled(commandType, config.disabledFeatures)) {
+    await sendTelegramMessage(
+      botToken,
+      chatId,
+      `⚙️ The /${commandType} command has been disabled by the administrator.`
+    );
     res.status(200).send("Command disabled.");
     return;
   }
@@ -614,6 +619,13 @@ export default async function handler(req, res) {
       if (isChitChatTrigger(message, text, botUsername)) {
         // Check if chit-chat feature is disabled
         if (isFeatureDisabled("chitchat", config.disabledFeatures)) {
+          await sendTelegramMessage(
+            botToken,
+            chatId,
+            "⚙️ Chit-chat has been disabled by the administrator.",
+            null,
+            message.message_id
+          );
           res.status(200).send("Chit-chat disabled.");
           return;
         }

@@ -57,6 +57,10 @@ export default async function handler(req, res) {
       );
 
       if (matchedUser) {
+        if (matchedUser.isActive === false) {
+          res.status(401).json({ error: "Your account is deactivated. Please contact the administrator." });
+          return;
+        }
         const token = generateToken(matchedUser.username, passwordHash);
         res.status(200).json({ success: true, username: matchedUser.username, token });
         return;
