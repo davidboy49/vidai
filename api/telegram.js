@@ -56,7 +56,7 @@ function getChatCache() {
 function getEntry(chatId) {
   const cache = getChatCache();
   if (!cache.has(chatId)) {
-    cache.set(chatId, { messages: [], recentQuotes: [], lastCommandAt: 0 });
+    cache.set(chatId, { messages: [], recentQuotes: [], lastCommandAt: 0, userChitChat: {} });
   }
   return cache.get(chatId);
 }
@@ -118,6 +118,59 @@ function updateRateLimit(chatId) {
   getEntry(chatId).lastCommandAt = Date.now();
 }
 
+/**
+ * Returns true if the user has sent too many chit-chat messages in a short window.
+ */
+function checkUserChitChatLimit(chatId, userId) {
+  if (!userId) return false;
+  const entry = getEntry(chatId);
+  if (!entry.userChitChat) {
+    entry.userChitChat = {};
+  }
+  if (!entry.userChitChat[userId]) {
+    entry.userChitChat[userId] = [];
+  }
+
+  const now = Date.now();
+  // Filter out timestamps older than 2 minutes (120,000 ms)
+  entry.userChitChat[userId] = entry.userChitChat[userId].filter(
+    (ts) => now - ts < 120_000
+  );
+
+  // If they have 5 or more messages in the last 2 minutes, trigger the joke
+  if (entry.userChitChat[userId].length >= 5) {
+    return true;
+  }
+
+  // Record this message
+  entry.userChitChat[userId].push(now);
+  return false;
+}
+
+function isChitChatTrigger(message, text, botUsername) {
+  if (message.chat?.type === "private") {
+    return true;
+  }
+  if (!botUsername) return false;
+
+  const mentionRegex = new RegExp(`@${botUsername}(\\s|$)`, "i");
+  if (mentionRegex.test(text)) {
+    return true;
+  }
+
+  if (message.reply_to_message?.from?.username?.toLowerCase() === botUsername.toLowerCase()) {
+    return true;
+  }
+
+  return false;
+}
+
+function cleanChitChatText(text, botUsername) {
+  if (!botUsername) return text;
+  const mentionRegex = new RegExp(`@${botUsername}(\\s|$)`, "i");
+  return text.replace(mentionRegex, "").trim();
+}
+
 /* ------------------------------------------------------------------ */
 /*  System prompts                                                    */
 /* ------------------------------------------------------------------ */
@@ -147,6 +200,13 @@ function getSystemPrompt(commandType) {
       return (
         "Give a short, playful, lighthearted roast of the chat activity. " +
         "Be funny but not mean-spirited. Keep it under 3 sentences."
+      );
+
+    case "chitchat":
+      return (
+        "You are Vidai, a friendly, witty, and engaging AI assistant in a Telegram group chat. " +
+        "Keep your replies natural, conversational, and extremely concise (1 to 3 sentences max). " +
+        "Feel free to use emoji where appropriate."
       );
 
     default:
@@ -257,10 +317,13 @@ async function sendTypingAction(botToken, chatId) {
  * Send a text message. If a parseMode is specified and the Telegram API
  * rejects it (e.g. malformed HTML), automatically retries as plain text.
  */
-async function sendTelegramMessage(botToken, chatId, text, parseMode) {
+async function sendTelegramMessage(botToken, chatId, text, parseMode, replyToMessageId) {
   const payload = { chat_id: chatId, text };
   if (parseMode) {
     payload.parse_mode = parseMode;
+  }
+  if (replyToMessageId) {
+    payload.reply_parameters = { message_id: replyToMessageId };
   }
 
   const response = await fetch(
@@ -275,7 +338,7 @@ async function sendTelegramMessage(botToken, chatId, text, parseMode) {
   if (!response.ok) {
     // If HTML/Markdown formatting caused the failure, retry as plain text
     if (parseMode && response.status === 400) {
-      return sendTelegramMessage(botToken, chatId, text);
+      return sendTelegramMessage(botToken, chatId, text, null, replyToMessageId);
     }
     const errorText = await response.text();
     throw new Error(`Telegram API error ${response.status}: ${errorText}`);
@@ -443,9 +506,73 @@ export default async function handler(req, res) {
         message.from?.first_name ||
         message.from?.username ||
         "Unknown";
-      addMessageToCache(chatId, senderName, text, message.date);
+      
+      const cleanText = cleanChitChatText(text, botUsername);
+      addMessageToCache(chatId, senderName, cleanText, message.date);
+
+      if (isChitChatTrigger(message, text, botUsername)) {
+        if (!hfToken) {
+          console.error("Missing HF_TOKEN.");
+          await sendTelegramMessage(
+            botToken,
+            chatId,
+            "⚙️ HF_TOKEN is not configured — I can't chat right now.",
+            null,
+            message.message_id
+          );
+          res.status(200).send("Missing HF_TOKEN.");
+          return;
+        }
+
+        // Check if user is chatting too much (5 messages per 2 minutes)
+        if (checkUserChitChatLimit(chatId, message.from?.id)) {
+          await sendTelegramMessage(
+            botToken,
+            chatId,
+            "និយាយច្រើនចឹង បង់ថ្លៃ token អោយញ៉ុមមែន?😊",
+            null,
+            message.message_id
+          );
+          res.status(200).send("Chit-chat rate limited.");
+          return;
+        }
+
+        try {
+          await sendTypingAction(botToken, chatId);
+
+          const cachedMessages = getMessagesForChat(chatId);
+          const combined = cachedMessages
+            .map((m) => `[${m.from}]: ${m.text}`)
+            .join("\n");
+          
+          const prompt = `This is a live chat. Reply to the last message.\n\nChat History:\n${combined}`;
+          
+          const result = await callLLM(prompt, hfToken, "chitchat");
+          
+          await sendTelegramMessage(
+            botToken,
+            chatId,
+            result,
+            null,
+            message.message_id
+          );
+
+          // Cache the bot's response to maintain conversation history
+          const botName = botUsername || "Vidai";
+          addMessageToCache(chatId, botName, result, Math.floor(Date.now() / 1000));
+        } catch (error) {
+          console.error("Failed to process chit-chat.", error);
+          await sendTelegramMessage(
+            botToken,
+            chatId,
+            "Sorry, I got a bit confused just now. 😵‍💫",
+            null,
+            message.message_id
+          );
+        }
+      }
     }
-    res.status(200).send("Message cached.");
+    res.status(200).send("Message processed.");
     return;
   }
 

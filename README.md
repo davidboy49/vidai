@@ -45,6 +45,9 @@ curl -X POST \
 
 ## Features
 
+- **Chit-chat & Dialogue** — Talk directly to the bot in group chats by mentioning its username (e.g. `@YourBot`) or replying to its messages. The bot can also chat in DM without any mentions.
+- **Dialogue History Context** — Caches both user messages and the bot's own responses so conversation back-and-forth feels natural and continuous.
+- **Khmer Token Cooldown Joke** — If a user chats excessively (more than 5 messages in 2 minutes), the bot humorously replies in Khmer: `និយាយច្រើនចឹង បង់ថ្លៃ token អោយញ៉ុមមែន?😊` ("Talk so much, are you going to pay for my tokens? 😊").
 - **Typing indicator** — The bot shows "typing…" while it processes a command.
 - **HTML formatting** — Summaries, quotes, and other responses are formatted
   with bold headers, italics, and emoji for a polished look.
