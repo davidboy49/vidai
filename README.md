@@ -32,6 +32,12 @@ chat and uses the Hugging Face inference API to generate responses.
   the bot to recognise commands like `/summary@YourBot` in groups.
 - `HF_MODEL` — Override the default LLM model. Defaults to
   `mistralai/Mistral-7B-Instruct-v0.2:featherless-ai`.
+- `RESTRICT_TO_ADMINS` — Set to `true` to restrict bot commands and chit-chat
+  in groups to chat administrators/owners only.
+- `DISABLE_FEATURES` — A comma-separated list of commands or features to disable
+  globally (e.g., `roast,mood,chitchat`).
+- `ALLOWED_USER_IDS` — A comma-separated list of approved Telegram User IDs. If
+  configured, only these users can interact with the bot.
 
 ## Webhook
 

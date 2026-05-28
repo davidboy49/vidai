@@ -171,6 +171,55 @@ function cleanChitChatText(text, botUsername) {
   return text.replace(mentionRegex, "").trim();
 }
 
+function isUserWhitelisted(userId) {
+  const allowedStr = process.env.ALLOWED_USER_IDS;
+  if (!allowedStr) return true; // Whitelist disabled by default
+
+  const allowedIds = allowedStr.split(",").map((id) => id.trim());
+  return allowedIds.includes(String(userId));
+}
+
+function isFeatureDisabled(featureName) {
+  const disabledStr = process.env.DISABLE_FEATURES;
+  if (!disabledStr) return false;
+
+  const disabledFeatures = disabledStr.split(",").map((f) => f.trim().toLowerCase());
+  return disabledFeatures.includes(featureName.toLowerCase());
+}
+
+async function isChatAdmin(botToken, chatId, userId) {
+  try {
+    const response = await fetch(
+      `https://api.telegram.org/bot${botToken}/getChatMember`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, user_id: userId }),
+      },
+    );
+    if (!response.ok) return false;
+    const data = await response.json();
+    const status = data?.result?.status;
+    return status === "administrator" || status === "creator";
+  } catch (error) {
+    console.error("Failed to check chat admin status:", error);
+    return false;
+  }
+}
+
+async function checkAdminRestriction(botToken, chat, user) {
+  if (process.env.RESTRICT_TO_ADMINS !== "true") {
+    return true; // Not restricted
+  }
+  if (chat?.type === "private") {
+    return true; // DMs have no admins, always allow
+  }
+  if (!user?.id) {
+    return false;
+  }
+  return await isChatAdmin(botToken, chat.id, user.id);
+}
+
 /* ------------------------------------------------------------------ */
 /*  System prompts                                                    */
 /* ------------------------------------------------------------------ */
@@ -496,6 +545,12 @@ export default async function handler(req, res) {
     return;
   }
 
+  // --- Whitelist check ----------------------------------------------
+  if (!isUserWhitelisted(message.from?.id)) {
+    res.status(200).send("User not whitelisted.");
+    return;
+  }
+
   const botUsername = process.env.TELEGRAM_BOT_USERNAME;
   const commandType = getCommandType(text, botUsername);
 
@@ -511,6 +566,33 @@ export default async function handler(req, res) {
       addMessageToCache(chatId, senderName, cleanText, message.date);
 
       if (isChitChatTrigger(message, text, botUsername)) {
+        // Check if chit-chat is disabled
+        if (isFeatureDisabled("chitchat")) {
+          await sendTelegramMessage(
+            botToken,
+            chatId,
+            "⚙️ Conversational chit-chat is currently disabled.",
+            null,
+            message.message_id
+          );
+          res.status(200).send("Chit-chat disabled.");
+          return;
+        }
+
+        // Check if restricted to admins
+        const hasAccess = await checkAdminRestriction(botToken, message.chat, message.from);
+        if (!hasAccess) {
+          await sendTelegramMessage(
+            botToken,
+            chatId,
+            "⚠️ This action is restricted to group administrators.",
+            null,
+            message.message_id
+          );
+          res.status(200).send("Access restricted.");
+          return;
+        }
+
         if (!hfToken) {
           console.error("Missing HF_TOKEN.");
           await sendTelegramMessage(
@@ -573,6 +655,33 @@ export default async function handler(req, res) {
       }
     }
     res.status(200).send("Message processed.");
+    return;
+  }
+
+  // --- Check if command is disabled globally ------------------------
+  if (isFeatureDisabled(commandType)) {
+    await sendTelegramMessage(
+      botToken,
+      chatId,
+      `⚙️ The /${commandType} command is currently disabled.`,
+      null,
+      message.message_id
+    );
+    res.status(200).send("Command disabled.");
+    return;
+  }
+
+  // --- Admin restriction check --------------------------------------
+  const hasAccess = await checkAdminRestriction(botToken, message.chat, message.from);
+  if (!hasAccess) {
+    await sendTelegramMessage(
+      botToken,
+      chatId,
+      "⚠️ This action is restricted to group administrators.",
+      null,
+      message.message_id
+    );
+    res.status(200).send("Access restricted.");
     return;
   }
 
