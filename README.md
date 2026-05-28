@@ -1,9 +1,18 @@
 # vidai
 
-Telegram summary bot that runs on Vercel. It listens for `/summary` (or `/activity`
-for latest activity highlights) in a group chat and uses the Hugging Face inference
-API to summarize recent messages. It also supports `/quote` to generate and send
-a random Greek, Chinese, or Stoic quote via the Hugging Face model directly in chat.
+Telegram summary bot that runs on Vercel. It listens for commands in a group
+chat and uses the Hugging Face inference API to generate responses.
+
+## Commands
+
+| Command | Description |
+| ---------- | ------------------------------------------------- |
+| `/summary` | TL;DR of recent chat messages |
+| `/activity`| Highlights of latest activity |
+| `/quote` | Random Greek, Chinese, or Stoic philosophical quote |
+| `/mood` | Analyze the group's current emotional vibe |
+| `/roast` | Playful, lighthearted roast of recent chat activity |
+| `/help` | Show available commands |
 
 ## Setup
 
@@ -12,9 +21,17 @@ a random Greek, Chinese, or Stoic quote via the Hugging Face model directly in c
    Hugging Face router.
 3. Deploy to Vercel and set the environment variables:
 
-- `TELEGRAM_BOT_TOKEN`
-- `HF_TOKEN`
-- `TELEGRAM_BOT_USERNAME` (optional, without the leading `@`, to match `/summary@YourBot`)
+### Required
+
+- `TELEGRAM_BOT_TOKEN` — Your Telegram bot token from BotFather.
+- `HF_TOKEN` — Hugging Face API access token.
+
+### Optional
+
+- `TELEGRAM_BOT_USERNAME` — Bot username without the leading `@`. Enables
+  the bot to recognise commands like `/summary@YourBot` in groups.
+- `HF_MODEL` — Override the default LLM model. Defaults to
+  `mistralai/Mistral-7B-Instruct-v0.2:featherless-ai`.
 
 ## Webhook
 
@@ -26,9 +43,27 @@ curl -X POST \
   -d "url=https://<your-vercel-domain>/api/telegram"
 ```
 
+## Features
+
+- **Typing indicator** — The bot shows "typing…" while it processes a command.
+- **HTML formatting** — Summaries, quotes, and other responses are formatted
+  with bold headers, italics, and emoji for a polished look.
+- **Sender attribution** — Messages are cached with the sender's name, so
+  summaries and activity reports can reference who said what.
+- **Quote reactions** — After sending a quote the bot reacts to your command
+  message with a tradition-appropriate emoji (🏛 Greek, 🐉 Chinese, 🗿 Stoic).
+- **Reply-to context** — Use any command as a reply to a specific message
+  and the bot will factor that message into its response.
+- **Rate limiting** — A 30-second per-chat cooldown prevents command spam and
+  protects API credits.
+- **Graceful error handling** — LLM rate-limits, timeouts, and malformed
+  payloads are handled gracefully with friendly user-facing messages and no
+  Telegram retry storms.
+
 ## Notes
 
 - The bot stores the last 50 text messages per chat in memory. Vercel serverless
-  functions are stateless, so the cache resets when the function instance is recycled.
-- The summary uses the `mistralai/Mistral-7B-Instruct-v0.2:featherless-ai` model
-  through the Hugging Face router. You can change it in `api/telegram.js`.
+  functions are stateless, so the cache resets when the function instance is
+  recycled.
+- The default model is `mistralai/Mistral-7B-Instruct-v0.2:featherless-ai`
+  via the Hugging Face router. Change it with the `HF_MODEL` env var.
