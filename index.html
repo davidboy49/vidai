@@ -10,41 +10,76 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    /* Theme Tokens (Dark Mode Default) */
+    /* Theme Tokens (Shadcn UI Zinc Theme - Dark Mode Default) */
     :root {
-      --bg-primary: #0b0f19;
-      --bg-secondary: rgba(17, 24, 39, 0.7);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --text-primary: #f3f4f6;
-      --text-muted: #9ca3af;
-      --input-bg: rgba(0, 0, 0, 0.3);
+      --background: 240 10% 3.9%;
+      --foreground: 0 0% 98%;
       
-      /* Accent colors */
-      --accent-teal: #06b6d4;
-      --accent-purple: #a855f7;
-      --accent-rose: #f43f5e;
-      --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #a855f7 100%);
-      --gradient-glow: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%);
+      --card: 240 10% 3.9%;
+      --card-foreground: 0 0% 98%;
       
-      --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      --glass-blur: blur(12px);
+      --popover: 240 10% 3.9%;
+      --popover-foreground: 0 0% 98%;
+      
+      --primary: 0 0% 98%;
+      --primary-foreground: 240 5.9% 10%;
+      
+      --secondary: 240 3.7% 15.9%;
+      --secondary-foreground: 0 0% 98%;
+      
+      --muted: 240 3.7% 15.9%;
+      --muted-foreground: 240 5% 64.9%;
+      
+      --accent: 240 3.7% 15.9%;
+      --accent-foreground: 0 0% 98%;
+      
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 0 0% 98%;
+      
+      --border: 240 3.7% 15.9%;
+      --input: 240 3.7% 15.9%;
+      --ring: 240 4.9% 83.9%;
+      
+      --radius: 0.5rem;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      
+      --glass-blur: 12px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     }
 
     /* Light Mode Tokens override */
     [data-theme="light"] {
-      --bg-primary: #f3f4f6;
-      --bg-secondary: rgba(255, 255, 255, 0.8);
-      --border-color: rgba(0, 0, 0, 0.08);
-      --text-primary: #111827;
-      --text-muted: #6b7280;
-      --input-bg: rgba(255, 255, 255, 0.9);
+      --background: 0 0% 100%;
+      --foreground: 240 10% 3.9%;
       
-      --accent-teal: #0891b2;
-      --accent-purple: #8b5cf6;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 3.9%;
       
-      --gradient-primary: linear-gradient(135deg, #0891b2 0%, #8b5cf6 100%);
-      --gradient-glow: radial-gradient(circle, rgba(8, 145, 178, 0.05) 0%, transparent 100%);
-      --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+      --popover: 0 0% 100%;
+      --popover-foreground: 240 10% 3.9%;
+      
+      --primary: 240 5.9% 10%;
+      --primary-foreground: 0 0% 98%;
+      
+      --secondary: 240 4.8% 95.9%;
+      --secondary-foreground: 240 5.9% 10%;
+      
+      --muted: 240 4.8% 95.9%;
+      --muted-foreground: 240 3.8% 46.1%;
+      
+      --accent: 240 4.8% 95.9%;
+      --accent-foreground: 240 5.9% 10%;
+      
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 0 0% 98%;
+      
+      --border: 240 5.9% 90%;
+      --input: 240 5.9% 90%;
+      --ring: 240 5.9% 10%;
     }
 
     * {
@@ -54,239 +89,429 @@
     }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
+      font-family: var(--font-sans);
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
       min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* App Layout */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 280px;
+      background-color: hsl(var(--background));
+      border-right: 1px solid hsl(var(--border));
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-      position: relative;
-      transition: background-color 0.4s ease, color 0.4s ease;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 40;
+      transition: transform 0.3s ease, background-color 0.3s ease;
     }
 
-    /* Ambient background glow */
-    body::before {
-      content: '';
-      position: absolute;
-      top: -10%;
-      right: -10%;
-      width: 50vw;
-      height: 50vw;
-      background: var(--gradient-glow);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    body::after {
-      content: '';
-      position: absolute;
-      bottom: -10%;
-      left: -10%;
-      width: 50vw;
-      height: 50vw;
-      background: radial-gradient(circle, rgba(168, 85, 247, 0.05) 0%, transparent 70%);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    header {
-      padding: 1.25rem 2rem;
-      border-bottom: 1px solid var(--border-color);
+    .sidebar-header {
+      padding: 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(11, 15, 25, 0.1);
-      backdrop-filter: var(--glass-blur);
-      z-index: 10;
+      border-bottom: 1px solid hsl(var(--border));
     }
 
-    header h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 800;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.5px;
+    .logo {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
-    header h1 span {
-      background: initial;
-      -webkit-text-fill-color: initial;
-      font-size: 1.1rem;
+    .logo-icon-svg {
+      color: hsl(var(--foreground));
     }
 
-    /* Theme Switcher Button */
-    .theme-toggle-btn {
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+    }
+
+    .logo-sub {
+      font-weight: 400;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.9rem;
+    }
+
+    .mobile-close-btn {
+      display: none;
       background: transparent;
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+      border: none;
+      color: hsl(var(--foreground));
       cursor: pointer;
+      padding: 0.25rem;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      overflow-y: auto;
+    }
+
+    .nav-item {
       display: flex;
       align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      font-size: 1.2rem;
-    }
-
-    .theme-toggle-btn:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: var(--accent-teal);
-    }
-
-    .logout-btn {
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
       background: transparent;
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
+      border: none;
+      color: hsl(var(--muted-foreground));
+      border-radius: var(--radius);
       cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: left;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    .nav-item:hover {
+      background-color: hsl(var(--secondary));
+      color: hsl(var(--foreground));
+    }
+
+    .nav-item.active {
+      background-color: hsl(var(--secondary));
+      color: hsl(var(--foreground));
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1.25rem;
+      border-top: 1px solid hsl(var(--border));
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .user-label {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+    }
+
+    /* Main Area */
+    .main-wrapper {
+      flex: 1;
+      margin-left: 280px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .main-header {
+      height: 70px;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid hsl(var(--border));
+      background-color: hsl(var(--background));
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: hsl(var(--foreground));
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .section-desc {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .theme-toggle-btn, .lock-btn {
+      background-color: transparent;
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--foreground));
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      height: 40px;
+      border-radius: var(--radius);
       font-size: 0.875rem;
       font-weight: 500;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
+      padding: 0 1rem;
     }
 
-    .logout-btn:hover {
-      color: var(--text-primary);
-      border-color: var(--accent-rose);
-      background: rgba(244, 63, 94, 0.1);
+    .theme-toggle-btn {
+      width: 40px;
+      padding: 0;
     }
 
-    main {
+    .theme-toggle-btn:hover, .lock-btn:hover {
+      background-color: hsl(var(--secondary));
+      border-color: hsl(var(--muted-foreground) / 0.4);
+    }
+
+    .lock-btn {
+      border-color: hsl(var(--border));
+    }
+
+    .lock-btn:hover {
+      color: hsl(var(--destructive-foreground));
+      background-color: hsl(var(--destructive) / 0.15);
+      border-color: hsl(var(--destructive) / 0.3);
+    }
+
+    .main-content {
       flex: 1;
-      max-width: 1200px;
+      padding: 2rem;
+      max-width: 1024px;
       width: 100%;
       margin: 0 auto;
-      padding: 2rem;
-      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding-bottom: 6rem; /* space for save bar */
+    }
+
+    /* Warning Banner */
+    .warning-banner {
+      background-color: hsl(var(--destructive) / 0.1);
+      border: 1px solid hsl(var(--destructive) / 0.3);
+      color: hsl(var(--foreground));
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .warning-icon {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    /* Tab Panes */
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      gap: 2rem;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .tab-pane.active {
+      display: flex;
+    }
+
+    .content-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 2rem;
     }
 
-    @media (min-width: 900px) {
-      main {
-        grid-template-columns: 380px 1fr;
+    @media (min-width: 768px) {
+      .content-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .content-grid-full {
+        grid-column: span 2;
       }
     }
 
-    /* Dashboard Cards */
+    /* Card Component */
     .card {
-      background: var(--bg-secondary);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: var(--card-shadow);
+      background-color: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
-      transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.4s ease;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
     .card:hover {
-      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: var(--shadow);
+      border-color: hsl(var(--muted-foreground) / 0.25);
+    }
+
+    .card-header {
+      padding: 1.5rem 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
     }
 
     .card-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 0.75rem;
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.025em;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    /* Form Styles */
+    .card-description {
+      font-size: 0.8rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .card-content {
+      padding: 0 1.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Forms & Inputs */
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.375rem;
     }
 
     .form-group label {
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.3px;
+      color: hsl(var(--foreground));
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .form-control {
-      background: var(--input-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
+      background-color: hsl(var(--background));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 0.5rem 0.75rem;
+      color: hsl(var(--foreground));
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
       width: 100%;
     }
 
     .form-control:focus {
       outline: none;
-      border-color: var(--accent-teal);
-      box-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+      border-color: hsl(var(--ring));
+      box-shadow: 0 0 0 2px hsl(var(--ring) / 0.1);
+    }
+
+    .form-control::placeholder {
+      color: hsl(var(--muted-foreground));
     }
 
     select.form-control {
       cursor: pointer;
       appearance: none;
-      background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+      background-image: url("data:image/svg+xml;utf8,<svg fill='none' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
       background-repeat: no-repeat;
       background-position: right 10px center;
+      background-size: 16px;
+      padding-right: 2.25rem;
+    }
+
+    [data-theme="dark"] select.form-control {
+      background-image: url("data:image/svg+xml;utf8,<svg fill='none' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg' stroke='%23f3f4f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
     }
 
     .input-helper {
       font-size: 0.75rem;
-      color: var(--text-muted);
+      color: hsl(var(--muted-foreground));
+      line-height: 1.4;
     }
 
-    /* Switch Toggles */
+    /* Switch Component */
     .switch-list {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 1rem;
     }
 
     .switch-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.25rem 0;
+      padding: 0.5rem 0;
     }
 
     .switch-label {
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
+      gap: 0.125rem;
+      padding-right: 1rem;
     }
 
     .switch-name {
-      font-size: 0.95rem;
-      font-weight: 600;
+      font-size: 0.875rem;
+      font-weight: 500;
     }
 
     .switch-desc {
       font-size: 0.75rem;
-      color: var(--text-muted);
+      color: hsl(var(--muted-foreground));
     }
 
     .switch {
       position: relative;
       display: inline-block;
-      width: 48px;
-      height: 24px;
+      width: 44px;
+      height: 22px;
       flex-shrink: 0;
     }
 
@@ -303,68 +528,73 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(120, 120, 120, 0.2);
-      transition: .4s;
-      border-radius: 24px;
-      border: 1px solid var(--border-color);
+      background-color: hsl(var(--secondary));
+      transition: .2s ease;
+      border-radius: 9999px;
+      border: 1px solid hsl(var(--border));
     }
 
     .slider::before {
       position: absolute;
       content: "";
-      height: 18px;
-      width: 18px;
+      height: 16px;
+      width: 16px;
       left: 2px;
       bottom: 2px;
-      background-color: white;
-      transition: .4s;
+      background-color: hsl(var(--foreground));
+      transition: .2s ease;
       border-radius: 50%;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
     input:checked + .slider {
-      background: var(--gradient-primary);
-      border-color: transparent;
+      background-color: hsl(var(--primary));
+      border-color: hsl(var(--primary));
     }
 
     input:checked + .slider::before {
-      transform: translateX(24px);
+      transform: translateX(22px);
+      background-color: hsl(var(--primary-foreground));
     }
 
-    /* Tabs Layout */
+    /* Tabs Layout (Segmented Controls) */
     .tabs-header {
       display: flex;
-      border-bottom: 1px solid var(--border-color);
+      background-color: hsl(var(--secondary));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 0.25rem;
       overflow-x: auto;
       gap: 0.25rem;
-      padding-bottom: 2px;
     }
 
     .tab-btn {
       background: transparent;
       border: none;
-      color: var(--text-muted);
-      padding: 0.75rem 1.25rem;
+      color: hsl(var(--muted-foreground));
+      padding: 0.5rem 1rem;
       cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      border-bottom: 2px solid transparent;
-      transition: all 0.3s ease;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: calc(var(--radius) - 2px);
+      transition: all 0.2s ease;
       white-space: nowrap;
+      flex: 1;
     }
 
     .tab-btn:hover {
-      color: var(--text-primary);
+      color: hsl(var(--foreground));
     }
 
     .tab-btn.active {
-      color: var(--accent-teal);
-      border-bottom-color: var(--accent-teal);
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      box-shadow: var(--shadow-sm);
     }
 
     .tab-content {
       display: none;
-      animation: fadeIn 0.4s ease;
+      animation: fadeIn 0.2s ease;
+      margin-top: 0.5rem;
     }
 
     .tab-content.active {
@@ -373,109 +603,203 @@
       gap: 1rem;
     }
 
-    /* User Manager Panel */
+    /* Lists (AI Profiles & Accounts) */
     .user-list {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      max-height: 200px;
+      max-height: 250px;
       overflow-y: auto;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
       padding: 0.5rem;
-      background: rgba(0, 0, 0, 0.1);
+      background-color: hsl(var(--secondary) / 0.5);
     }
 
     .user-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem;
-      background: var(--bg-primary);
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      background-color: hsl(var(--card));
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid hsl(var(--border));
     }
 
     .user-name {
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       font-weight: 500;
     }
 
-    .user-delete-btn {
-      background: transparent;
-      border: none;
-      color: var(--accent-rose);
-      cursor: pointer;
-      font-size: 0.9rem;
-      opacity: 0.7;
-      transition: opacity 0.3s;
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid hsl(var(--border));
+      background-color: hsl(var(--secondary));
+      color: hsl(var(--muted-foreground));
     }
 
-    .user-delete-btn:hover {
-      opacity: 1;
+    .status-badge.connected::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background-color: #10b981; /* emerald-500 */
+      border-radius: 50%;
+    }
+
+    .status-badge.disconnected::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background-color: #ef4444; /* red-500 */
+      border-radius: 50%;
+    }
+
+    .status-badge.disconnected {
+      border-color: #f87171 / 0.3;
+      background-color: #ef4444 / 0.1;
+      color: #f87171;
+    }
+
+    .user-status-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      margin-left: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .user-status-badge.active {
+      background-color: hsl(var(--primary) / 0.1);
+      color: hsl(var(--foreground));
+      border: 1px solid hsl(var(--border));
+    }
+
+    .user-status-badge.inactive {
+      background-color: hsl(var(--destructive) / 0.1);
+      color: #f87171;
+      border: 1px solid #ef4444 / 0.2;
+    }
+
+    /* User Action Buttons */
+    .user-actions {
+      display: flex;
+      gap: 0.375rem;
+      align-items: center;
+    }
+
+    .user-action-btn {
+      background: transparent;
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.375rem 0.625rem;
+      border-radius: calc(var(--radius) - 2px);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: all 0.15s ease;
+    }
+
+    .user-action-btn:hover {
+      background-color: hsl(var(--secondary));
+      color: hsl(var(--foreground));
+      border-color: hsl(var(--muted-foreground) / 0.3);
+    }
+
+    .user-action-btn.toggle-deactivate:hover {
+      color: #ef4444;
+      background-color: #ef4444 / 0.1;
+      border-color: #ef4444 / 0.2;
+    }
+
+    .user-action-btn.toggle-activate:hover {
+      color: #10b981;
+      background-color: #10b981 / 0.1;
+      border-color: #10b981 / 0.2;
+    }
+
+    .user-action-btn.delete-btn:hover {
+      color: #ef4444;
+      background-color: #ef4444 / 0.1;
+      border-color: #ef4444 / 0.2;
     }
 
     /* Buttons */
-    .save-bar {
-      grid-column: 1 / -1;
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      padding: 1rem 2rem;
-      border-radius: 16px;
-      backdrop-filter: var(--glass-blur);
-    }
-
     .btn {
-      padding: 0.75rem 1.75rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
       justify-content: center;
-      border: none;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      height: 38px;
     }
 
     .btn-primary {
-      background: var(--gradient-primary);
-      color: white;
-      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
-    }
-
-    .btn-primary:active {
-      transform: translateY(0);
+      opacity: 0.9;
     }
 
     .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
+      background-color: transparent;
+      border-color: hsl(var(--border));
+      color: hsl(var(--foreground));
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background-color: hsl(var(--secondary));
     }
 
     .btn-danger {
-      background: rgba(244, 63, 94, 0.1);
-      border: 1px solid var(--accent-rose);
-      color: var(--accent-rose);
+      background-color: hsl(var(--destructive) / 0.1);
+      border-color: hsl(var(--destructive) / 0.3);
+      color: #f87171;
     }
 
     .btn-danger:hover {
-      background: var(--accent-rose);
-      color: white;
+      background-color: hsl(var(--destructive));
+      color: hsl(var(--destructive-foreground));
+    }
+
+    /* Floating Save Bar */
+    .save-bar {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.75rem;
+      background-color: hsl(var(--card) / 0.8);
+      border: 1px solid hsl(var(--border));
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius);
+      backdrop-filter: blur(var(--glass-blur));
+      box-shadow: var(--shadow-lg);
+      z-index: 50;
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Login Modal Overlay */
@@ -485,7 +809,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(7, 10, 18, 0.95);
+      background-color: hsl(var(--background) / 0.8);
       backdrop-filter: blur(25px);
       display: flex;
       justify-content: center;
@@ -493,7 +817,7 @@
       z-index: 100;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.3s ease;
     }
 
     .login-overlay.active {
@@ -503,183 +827,189 @@
 
     .login-card {
       width: 100%;
-      max-width: 400px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 2.5rem;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      max-width: 360px;
+      background-color: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 2.25rem;
+      box-shadow: var(--shadow-lg);
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-      animation: scaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      gap: 1.25rem;
+      animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .login-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      text-align: center;
     }
 
     .login-icon {
-      font-size: 3rem;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-align: center;
+      color: hsl(var(--foreground));
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .login-card h2 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.75rem;
-      font-weight: 800;
-      text-align: center;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .login-card p {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.8rem;
+      line-height: 1.4;
     }
 
     /* Toast Notification */
     .toast-container {
       position: fixed;
-      bottom: 2rem;
-      right: 2rem;
+      bottom: 1.5rem;
+      left: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.5rem;
       z-index: 1000;
+      max-width: 380px;
+      width: 100%;
     }
 
     .toast {
-      background: rgba(17, 24, 39, 0.95);
-      border: 1px solid var(--border-color);
-      color: #f3f4f6;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      box-shadow: var(--card-shadow);
-      backdrop-filter: var(--glass-blur);
+      background-color: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--foreground));
+      padding: 0.875rem 1rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      min-width: 300px;
-      transform: translateX(120%);
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      font-size: 0.95rem;
+      transform: translateY(50px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      font-size: 0.875rem;
       font-weight: 500;
     }
 
     .toast.success {
-      border-left: 4px solid var(--accent-teal);
+      border-left: 3px solid #10b981; /* emerald-500 */
     }
 
     .toast.error {
-      border-left: 4px solid var(--accent-rose);
+      border-left: 3px solid #ef4444; /* red-500 */
     }
 
     .toast.active {
-      transform: translateX(0);
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .toast-icon.success {
+      color: #10b981;
+    }
+
+    .toast-icon.error {
+      color: #ef4444;
+    }
+
+    /* Sidebar Overlay (Mobile) */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 35;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+      opacity: 1;
     }
 
     /* Keyframes */
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
+      from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes scaleUp {
-      from { transform: scale(0.9); opacity: 0; }
+      from { transform: scale(0.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
 
-    /* Status Indicator */
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
+    @keyframes slideUp {
+      from { transform: translateY(16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
-    .status-badge.connected::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      background-color: var(--accent-teal);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent-teal);
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
     }
 
-    /* User Status Badges and Action Buttons */
-    .user-status-badge {
-      display: inline-flex;
-      align-items: center;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-      margin-left: 0.5rem;
-    }
-    .user-status-badge.active {
-      background: rgba(6, 182, 212, 0.15);
-      color: var(--accent-teal);
-      border: 1px solid rgba(6, 182, 212, 0.3);
-    }
-    .user-status-badge.inactive {
-      background: rgba(244, 63, 94, 0.15);
-      color: var(--accent-rose);
-      border: 1px solid rgba(244, 63, 94, 0.3);
-    }
-    .user-actions {
-      display: flex;
-      gap: 0.25rem;
-      align-items: center;
-    }
-    .user-action-btn {
+    ::-webkit-scrollbar-track {
       background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.8rem;
-      opacity: 0.7;
-      transition: all 0.2s ease;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      border: 1px solid transparent;
     }
-    .user-action-btn:hover {
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-primary);
-      border-color: var(--border-color);
+
+    ::-webkit-scrollbar-thumb {
+      background: hsl(var(--border));
+      border-radius: 9999px;
     }
-    .user-action-btn.toggle-deactivate:hover {
-      color: var(--accent-rose);
-      background: rgba(244, 63, 94, 0.1);
-      border-color: rgba(244, 63, 94, 0.2);
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--muted-foreground) / 0.4);
     }
-    .user-action-btn.toggle-activate:hover {
-      color: var(--accent-teal);
-      background: rgba(6, 182, 212, 0.1);
-      border-color: rgba(6, 182, 212, 0.2);
-    }
-    .user-action-btn.reset-pwd:hover {
-      color: var(--accent-purple);
-      background: rgba(168, 85, 247, 0.1);
-      border-color: rgba(168, 85, 247, 0.2);
-    }
-    .user-action-btn.delete-btn:hover {
-      color: var(--accent-rose);
-      background: rgba(244, 63, 94, 0.1);
-      border-color: rgba(244, 63, 94, 0.2);
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-wrapper {
+        margin-left: 0;
+      }
+      .mobile-menu-btn, .mobile-close-btn {
+        display: inline-flex;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- Sidebar Overlay (Mobile only) -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
   <!-- Lock Screen / Login Overlay -->
   <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
-      <div class="login-icon">🔒</div>
-      <h2>Vidai Bot Login</h2>
-      <p style="color: var(--text-muted); font-size: 0.875rem; text-align: center;">Enter your credentials to access configuration panel.</p>
+      <div class="login-header">
+        <div class="login-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h2>Vidai Bot Login</h2>
+        <p>Enter your administrator credentials to access the configuration dashboard.</p>
+      </div>
       <form id="loginForm" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1rem;">
         <div class="form-group">
           <input type="text" id="adminUsernameInput" class="form-control" placeholder="Username" required autofocus>
@@ -687,366 +1017,477 @@
         <div class="form-group">
           <input type="password" id="adminPasswordInput" class="form-control" placeholder="Password" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Unlock Dashboard</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.25rem;">Unlock Dashboard</button>
       </form>
     </div>
   </div>
 
-  <!-- Header -->
-  <header>
-    <h1>Vidai Bot <span>Control Panel</span></h1>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">☀️</button>
-      <div id="dbStatusBadge" class="status-badge connected">Checking Storage...</div>
-      <button class="logout-btn" onclick="handleLogout()">Lock Panel</button>
-    </div>
-  </header>
-
-  <!-- Content -->
-  <main id="mainDashboard" style="opacity: 0; display: none;">
-    <!-- Connection Warning Banner -->
-    <div id="kvWarningBanner" style="display: none; grid-column: 1 / -1; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--accent-rose); color: var(--text-primary); padding: 1.25rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; align-items: center; gap: 1rem; margin-bottom: 0.5rem; animation: fadeIn 0.4s ease;">
-      <span style="font-size: 1.75rem;">⚠️</span>
-      <div>
-        <strong>Vercel KV is not connected!</strong> Settings changed here are temporary and will reset when Vercel scales down or recycles the serverless functions. To make settings permanent, link a free <strong>Vercel KV (Upstash Redis)</strong> database to your Vercel project.
-      </div>
-    </div>
-    
-    <!-- Sidebar: Broadcast, Features & Permissions -->
-    <div style="display: flex; flex-direction: column; gap: 2rem;">
-      
-      <!-- Broadcast Card -->
-      <div class="card">
-        <h2 class="card-title">💬 Bot Broadcast <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Send Message</span></h2>
-        <form onsubmit="sendBroadcastMessage(event)" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div class="form-group">
-            <label for="broadcastChatSelect">Target Chat / Group</label>
-            <select id="broadcastChatSelect" class="form-control" required>
-              <option value="">-- Select Chat --</option>
-              <option value="manual">-- Enter Chat ID manually --</option>
-            </select>
-            <span class="input-helper">Select a group seen by the bot or type ID manually.</span>
-          </div>
-          <!-- Manual Chat ID Input (Hidden by default) -->
-          <div class="form-group" id="manualChatIdGroup" style="display: none; animation: fadeIn 0.3s ease;">
-            <label for="broadcastManualChatId">Custom Chat ID / User ID</label>
-            <input type="text" id="broadcastManualChatId" class="form-control" placeholder="e.g. -100123456789 or 9876543">
-            <span class="input-helper">Numeric ID (usually starts with a minus sign for groups).</span>
-          </div>
-          <div class="form-group">
-            <label for="broadcastMessageText">Message Content</label>
-            <textarea id="broadcastMessageText" class="form-control" style="min-height: 80px; resize: vertical;" placeholder="Type broadcast message..." required></textarea>
-          </div>
-          <button type="submit" id="broadcastSendBtn" class="btn btn-primary" style="width: 100%;">Send Message</button>
-        </form>
-      </div>
-      
-      <!-- Feature Toggles -->
-      <div class="card">
-        <h2 class="card-title">⚙️ Bot Features <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Active Toggles</span></h2>
-        <div class="switch-list">
-          
-          <div class="switch-item">
-            <div class="switch-label">
-              <span class="switch-name">Chit-Chat</span>
-              <span class="switch-desc">Conversations via replies/mentions</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggle-chitchat" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="switch-item">
-            <div class="switch-label">
-              <span class="switch-name">Summary (/summary)</span>
-              <span class="switch-desc">Generate TL;DR group logs</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggle-summary" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="switch-item">
-            <div class="switch-label">
-              <span class="switch-name">Activity (/activity)</span>
-              <span class="switch-desc">Recent dialogue highlights</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggle-activity" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="switch-item">
-            <div class="switch-label">
-              <span class="switch-name">Group Mood (/mood)</span>
-              <span class="switch-desc">Emotional vibes analysis</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggle-mood" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="switch-item">
-            <div class="switch-label">
-              <span class="switch-name">Roast Chat (/roast)</span>
-              <span class="switch-desc">Sarcastic, playful chat review</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggle-roast" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="switch-item">
-            <div class="switch-label">
-              <span class="switch-name">Philosophy Quotes (/quote)</span>
-              <span class="switch-desc">Philosophy quote commands</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggle-quote" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
+  <!-- App Layout -->
+  <div class="app-layout" id="mainDashboard" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon-svg"><path d="m3 11 18-5v12L3 13v-2Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+          <span class="logo-text">Vidai <span class="logo-sub">Console</span></span>
         </div>
+        <button class="mobile-close-btn" id="mobileCloseBtn" title="Close menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
       </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="general">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>General & Features</span>
+        </button>
+        <button class="nav-item" data-tab="prompts">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>System Prompts</span>
+        </button>
+        <button class="nav-item" data-tab="profiles">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 15h3"/><path d="M1 9h3"/><path d="M1 15h3"/></svg>
+          <span>AI Profiles</span>
+        </button>
+        <button class="nav-item" data-tab="accounts">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Admin Accounts</span>
+        </button>
+        <button class="nav-item" data-tab="broadcast">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-megaphone"><path d="m3 11 18-5v12L3 13v-2Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+          <span>Broadcast Console</span>
+        </button>
+      </nav>
 
-      <!-- Access Control Settings -->
-      <div class="card">
-        <h2 class="card-title">🔒 Permissions</h2>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <span class="user-label">Logged in as</span>
+          <span class="user-name" id="sidebarUserName">Admin</span>
+        </div>
+        <div id="dbStatusBadge" class="status-badge connected">Checking Storage...</div>
+      </div>
+    </aside>
+
+    <!-- Main Content wrapper -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="main-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" title="Open navigation menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          </button>
+          <div>
+            <h2 class="section-title" id="activeSectionTitle">General & Features</h2>
+            <p class="section-desc" id="activeSectionDesc">Configure bot features, commands, rate limits, and restrict access.</p>
+          </div>
+        </div>
         
-        <div class="switch-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-          <div class="switch-label">
-            <span class="switch-name">Restrict to Admins</span>
-            <span class="switch-desc">Only group admins can use commands</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="restrictToAdmins">
-            <span class="slider"></span>
-          </label>
+        <div class="header-right">
+          <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>
+          </button>
+          <button class="lock-btn" onclick="handleLogout()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Lock Panel</span>
+          </button>
         </div>
+      </header>
 
-        <div class="form-group">
-          <label for="allowedUserIds">Whitelist User IDs</label>
-          <input type="text" id="allowedUserIds" class="form-control" placeholder="e.g. 1234567, 9876543">
-          <span class="input-helper">Comma-separated user IDs. Leave empty to allow all users.</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Main Panel: Model, Prompts & User Management -->
-    <div style="display: flex; flex-direction: column; gap: 2rem;">
-      
-      <!-- General parameters -->
-      <div class="card">
-        <h2 class="card-title">🤖 Model & Performance</h2>
-        <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
-          
-          <div class="form-group">
-            <label for="hfModel">Hugging Face Model Router Path</label>
-            <input type="text" id="hfModel" class="form-control" placeholder="mistralai/Mistral-7B-Instruct-v0.2:featherless-ai">
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-            
-            <div class="form-group">
-              <label for="commandCooldown">Command Cooldown (s)</label>
-              <input type="number" id="commandCooldown" class="form-control" min="0" placeholder="5">
-            </div>
-
-            <div class="form-group">
-              <label for="chitchatLimitCount">Chit-Chat Msg Limit</label>
-              <input type="number" id="chitchatLimitCount" class="form-control" min="1" placeholder="5">
-            </div>
-
-            <div class="form-group">
-              <label for="chitchatLimitWindow">Limit Window (s)</label>
-              <input type="number" id="chitchatLimitWindow" class="form-control" min="1" placeholder="120">
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Prompts Editor -->
-      <div class="card">
-        <h2 class="card-title">🎭 Dynamic System Prompts</h2>
+      <!-- Main Content Container -->
+      <main class="main-content">
         
-        <div class="tabs-header" id="promptTabs">
-          <button class="tab-btn active" onclick="switchPromptTab('chitchat')">Chit-Chat</button>
-          <button class="tab-btn" onclick="switchPromptTab('summary')">Summary</button>
-          <button class="tab-btn" onclick="switchPromptTab('activity')">Activity</button>
-          <button class="tab-btn" onclick="switchPromptTab('mood')">Mood</button>
-          <button class="tab-btn" onclick="switchPromptTab('roast')">Roast</button>
-          <button class="tab-btn" onclick="switchPromptTab('quote')">Quotes</button>
+        <!-- Connection Warning Banner -->
+        <div id="kvWarningBanner" class="warning-banner" style="display: none;">
+          <span class="warning-icon">⚠️</span>
+          <div class="warning-text">
+            <strong>Vercel KV database is not connected!</strong> Settings changed here are stored temporarily in serverless RAM and will reset when Vercel scales down or recycles instances. Link a free <strong>Vercel KV (Upstash Redis)</strong> database to your Vercel project to persist settings.
+          </div>
         </div>
 
-        <div id="prompts-container" style="margin-top: 0.5rem;">
-          
-          <!-- Chit Chat Tab -->
-          <div id="tab-chitchat" class="tab-content active">
-            <div class="form-group">
-              <label for="prompt-chitchat">Chit-Chat Instructions</label>
-              <textarea id="prompt-chitchat" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
-            </div>
-          </div>
-
-          <!-- Summary Tab -->
-          <div id="tab-summary" class="tab-content">
-            <div class="form-group">
-              <label for="prompt-summary">Summary Formatting guidelines</label>
-              <textarea id="prompt-summary" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
-            </div>
-          </div>
-
-          <!-- Activity Tab -->
-          <div id="tab-activity" class="tab-content">
-            <div class="form-group">
-              <label for="prompt-activity">Activity highlights guidelines</label>
-              <textarea id="prompt-activity" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
-            </div>
-          </div>
-
-          <!-- Mood Tab -->
-          <div id="tab-mood" class="tab-content">
-            <div class="form-group">
-              <label for="prompt-mood">Sentiment analysis instructions</label>
-              <textarea id="prompt-mood" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
-            </div>
-          </div>
-
-          <!-- Roast Tab -->
-          <div id="tab-roast" class="tab-content">
-            <div class="form-group">
-              <label for="prompt-roast">Roasting Instructions</label>
-              <textarea id="prompt-roast" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
-            </div>
-          </div>
-
-          <!-- Quote Tab -->
-          <div id="tab-quote" class="tab-content">
-            <div class="form-group">
-              <label for="prompt-quote">Philosophical quotes template formatting</label>
-              <textarea id="prompt-quote" class="form-control" style="min-height: 140px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- AI Profiles Card -->
-      <div class="card">
-        <h2 class="card-title">🔌 AI Provider Profiles</h2>
-        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
-          
-          <div class="form-group">
-            <label for="activeProfileSelect">Active AI Profile</label>
-            <select id="activeProfileSelect" class="form-control">
-              <option value="">-- Legacy Default (Hugging Face Env Token) --</option>
-            </select>
-            <span class="input-helper">Choose which model configuration the bot should use.</span>
-          </div>
-
-          <div class="form-group">
-            <label>Configured Profiles</label>
-            <div id="profileListContainer" class="user-list">
-              <!-- Populated dynamically -->
-              <div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">No custom profiles configured.</div>
-            </div>
-          </div>
-
-          <form id="profileForm" onsubmit="handleSaveProfile(event)" style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
-            <span id="profileFormTitle" style="font-size: 0.875rem; font-weight: 700;">Create or Edit Profile</span>
-            <input type="hidden" id="editingProfileId" value="">
+        <!-- TAB PANE: GENERAL & FEATURES -->
+        <div class="tab-pane active" id="pane-general">
+          <div class="content-grid">
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-              <div class="form-group">
-                <label for="profileName">Profile Name</label>
-                <input type="text" id="profileName" class="form-control" placeholder="e.g. Gemini Pro, OpenRouter" required>
+            <!-- Bot Toggles Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">⚙️ Active Bot Commands</h3>
+                <p class="card-description">Toggle specific Telegram group commands globally.</p>
               </div>
-              <div class="form-group">
-                <label for="profileProvider">Provider Type</label>
-                <select id="profileProvider" class="form-control" onchange="onProviderChange()" required>
-                  <option value="huggingface">Hugging Face</option>
-                  <option value="gemini">Google Gemini</option>
-                  <option value="openai">OpenAI</option>
-                  <option value="custom">Custom (OpenAI-compatible)</option>
-                </select>
+              <div class="card-content">
+                <div class="switch-list">
+                  <div class="switch-item">
+                    <div class="switch-label">
+                      <span class="switch-name">Chit-Chat Dialogue</span>
+                      <span class="switch-desc">Conversations via mentions or replies</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="toggle-chitchat" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="switch-item">
+                    <div class="switch-label">
+                      <span class="switch-name">Summaries (/summary)</span>
+                      <span class="switch-desc">Generates TL;DR points of recent logs</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="toggle-summary" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="switch-item">
+                    <div class="switch-label">
+                      <span class="switch-name">Activity highlights (/activity)</span>
+                      <span class="switch-desc">Identifies latest chat summaries</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="toggle-activity" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="switch-item">
+                    <div class="switch-label">
+                      <span class="switch-name">Group Mood (/mood)</span>
+                      <span class="switch-desc">Vibes and emotional sentiment analysis</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="toggle-mood" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="switch-item">
+                    <div class="switch-label">
+                      <span class="switch-name">Roast (/roast)</span>
+                      <span class="switch-desc">Sarcastic chat diagnostics review</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="toggle-roast" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="switch-item">
+                    <div class="switch-label">
+                      <span class="switch-name">Philosophy Quotes (/quote)</span>
+                      <span class="switch-desc">Random Stoic/Eastern template quotes</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="toggle-quote" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-              <div class="form-group" id="baseURLGroup">
-                <label for="profileBaseURL">API Base URL</label>
-                <input type="url" id="profileBaseURL" class="form-control" value="https://router.huggingface.co/v1" required>
+            <!-- Permissions / Access Control Card -->
+            <div class="card" style="height: fit-content;">
+              <div class="card-header">
+                <h3 class="card-title">🔒 Access Control</h3>
+                <p class="card-description">Restrict command permissions and whitelist members.</p>
               </div>
-              <div class="form-group">
-                <label for="profileModel">Model Name</label>
-                <input type="text" id="profileModel" class="form-control" placeholder="e.g. gemini-1.5-flash" required>
+              <div class="card-content">
+                <div class="switch-list">
+                  <div class="switch-item">
+                    <div class="switch-label">
+                      <span class="switch-name">Restrict to Admins</span>
+                      <span class="switch-desc">Only group admins/owners can command bot</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="restrictToAdmins">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-top: 0.5rem;">
+                  <label for="allowedUserIds">Approved Telegram User IDs</label>
+                  <input type="text" id="allowedUserIds" class="form-control" placeholder="e.g. 1234567, 9876543">
+                  <span class="input-helper">Comma-separated user IDs. Leave blank to allow all users.</span>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="profileApiKey">API Key / Access Token</label>
-              <input type="password" id="profileApiKey" class="form-control" placeholder="Enter key/token (leave empty to keep unchanged for edits or use env fallback)">
-              <span class="input-helper">Uses server-side environment vars (HF_TOKEN, GEMINI_API_KEY, OPENAI_API_KEY) if left blank.</span>
+            <!-- Model & Performance Card -->
+            <div class="card content-grid-full">
+              <div class="card-header">
+                <h3 class="card-title">🤖 Model & Limits</h3>
+                <p class="card-description">Configure the LLM settings and spam prevention limits.</p>
+              </div>
+              <div class="card-content">
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
+                  <div class="form-group">
+                    <label for="hfModel">Hugging Face Model Router Path</label>
+                    <input type="text" id="hfModel" class="form-control" placeholder="mistralai/Mistral-7B-Instruct-v0.2:featherless-ai">
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                      <label for="commandCooldown">Command Cooldown (seconds)</label>
+                      <input type="number" id="commandCooldown" class="form-control" min="0" placeholder="5">
+                    </div>
+                    <div class="form-group">
+                      <label for="chitchatLimitCount">Dialogue Limit (msgs)</label>
+                      <input type="number" id="chitchatLimitCount" class="form-control" min="1" placeholder="5">
+                    </div>
+                    <div class="form-group">
+                      <label for="chitchatLimitWindow">Limit Window (seconds)</label>
+                      <input type="number" id="chitchatLimitWindow" class="form-control" min="1" placeholder="120">
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div style="display: flex; gap: 0.5rem; align-self: flex-end;">
-              <button type="button" id="cancelProfileEditBtn" class="btn btn-secondary" style="display: none;" onclick="resetProfileForm()">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save Profile</button>
-            </div>
-          </form>
-
+          </div>
         </div>
-      </div>
 
-      <!-- User Management Card -->
-      <div class="card">
-        <h2 class="card-title">🔑 Dashboard User Accounts</h2>
-        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
-          
-          <div class="form-group">
-            <label>Registered Administrators</label>
-            <div id="userListContainer" class="user-list">
-              <!-- Populated dynamically -->
-              <div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">Loading users...</div>
+        <!-- TAB PANE: SYSTEM PROMPTS -->
+        <div class="tab-pane" id="pane-prompts">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">🎭 Persona & Prompt Guidelines</h3>
+              <p class="card-description">Set core instructions and format rules applied to each bot command generation.</p>
+            </div>
+            <div class="card-content">
+              <div class="tabs-header" id="promptTabs">
+                <button class="tab-btn active" onclick="switchPromptTab('chitchat')">Chit-Chat</button>
+                <button class="tab-btn" onclick="switchPromptTab('summary')">Summary</button>
+                <button class="tab-btn" onclick="switchPromptTab('activity')">Activity</button>
+                <button class="tab-btn" onclick="switchPromptTab('mood')">Mood</button>
+                <button class="tab-btn" onclick="switchPromptTab('roast')">Roast</button>
+                <button class="tab-btn" onclick="switchPromptTab('quote')">Quotes</button>
+              </div>
+
+              <div id="prompts-container" style="margin-top: 0.5rem;">
+                
+                <!-- Chit Chat Tab -->
+                <div id="tab-chitchat" class="tab-content active">
+                  <div class="form-group">
+                    <label for="prompt-chitchat">Chit-Chat Instructions</label>
+                    <textarea id="prompt-chitchat" class="form-control" style="min-height: 200px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+                  </div>
+                </div>
+
+                <!-- Summary Tab -->
+                <div id="tab-summary" class="tab-content">
+                  <div class="form-group">
+                    <label for="prompt-summary">Summary Formatting guidelines</label>
+                    <textarea id="prompt-summary" class="form-control" style="min-height: 200px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+                  </div>
+                </div>
+
+                <!-- Activity Tab -->
+                <div id="tab-activity" class="tab-content">
+                  <div class="form-group">
+                    <label for="prompt-activity">Activity highlights guidelines</label>
+                    <textarea id="prompt-activity" class="form-control" style="min-height: 200px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+                  </div>
+                </div>
+
+                <!-- Mood Tab -->
+                <div id="tab-mood" class="tab-content">
+                  <div class="form-group">
+                    <label for="prompt-mood">Sentiment analysis instructions</label>
+                    <textarea id="prompt-mood" class="form-control" style="min-height: 200px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+                  </div>
+                </div>
+
+                <!-- Roast Tab -->
+                <div id="tab-roast" class="tab-content">
+                  <div class="form-group">
+                    <label for="prompt-roast">Roasting Instructions</label>
+                    <textarea id="prompt-roast" class="form-control" style="min-height: 200px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+                  </div>
+                </div>
+
+                <!-- Quote Tab -->
+                <div id="tab-quote" class="tab-content">
+                  <div class="form-group">
+                    <label for="prompt-quote">Philosophical quotes template formatting</label>
+                    <textarea id="prompt-quote" class="form-control" style="min-height: 200px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
+        </div>
 
-          <form onsubmit="handleSaveUser(event)" style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
-            <span style="font-size: 0.875rem; font-weight: 700;">Add or Update Account Password</span>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
-              <div class="form-group">
-                <input type="text" id="targetUsername" class="form-control" placeholder="Username" required>
+        <!-- TAB PANE: AI PROFILES -->
+        <div class="tab-pane" id="pane-profiles">
+          <div class="content-grid">
+            
+            <!-- AI Provider Profiles Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">🔌 Active AI Profiles</h3>
+                <p class="card-description">Configure providers like Gemini, OpenAI, or Hugging Face.</p>
               </div>
-              <div class="form-group">
-                <input type="password" id="targetPassword" class="form-control" placeholder="Password" required>
+              <div class="card-content">
+                <div class="form-group">
+                  <label for="activeProfileSelect">Active Provider Profile</label>
+                  <select id="activeProfileSelect" class="form-control">
+                    <option value="">-- Legacy Default (Hugging Face Env Token) --</option>
+                  </select>
+                  <span class="input-helper">Select the profile configuration the summary bot runs on.</span>
+                </div>
+
+                <div class="form-group" style="margin-top: 0.5rem;">
+                  <label>Configured AI Endpoints</label>
+                  <div id="profileListContainer" class="user-list">
+                    <div style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-align: center; padding: 1rem;">Loading profiles...</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-secondary" style="width: fit-content; align-self: flex-end;">Save Account</button>
-          </form>
 
+            <!-- Profile Creator Form Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title" id="profileFormTitle">Create or Edit Profile</h3>
+                <p class="card-description">Save provider access tokens and custom endpoint details.</p>
+              </div>
+              <div class="card-content">
+                <form id="profileForm" onsubmit="handleSaveProfile(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+                  <input type="hidden" id="editingProfileId" value="">
+                  
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                      <label for="profileName">Profile Name</label>
+                      <input type="text" id="profileName" class="form-control" placeholder="e.g. Gemini Flash" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="profileProvider">Provider</label>
+                      <select id="profileProvider" class="form-control" onchange="onProviderChange()" required>
+                        <option value="huggingface">Hugging Face</option>
+                        <option value="gemini">Google Gemini</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="custom">Custom (OpenAI API)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+                    <div class="form-group" id="baseURLGroup">
+                      <label for="profileBaseURL">API Base URL</label>
+                      <input type="url" id="profileBaseURL" class="form-control" value="https://router.huggingface.co/v1" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="profileModel">Model Name</label>
+                      <input type="text" id="profileModel" class="form-control" placeholder="e.g. mistral-7b" required>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="profileApiKey">API Key / Access Token</label>
+                    <input type="password" id="profileApiKey" class="form-control" placeholder="Enter key/token">
+                    <span class="input-helper">Falls back to server environment keys (HF_TOKEN, GEMINI_API_KEY, etc.) if left empty.</span>
+                  </div>
+
+                  <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem;">
+                    <button type="button" id="cancelProfileEditBtn" class="btn btn-secondary" style="display: none;" onclick="resetProfileForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Profile</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </div>
 
+        <!-- TAB PANE: ADMIN ACCOUNTS -->
+        <div class="tab-pane" id="pane-accounts">
+          <div class="content-grid">
+            
+            <!-- Registered Admins Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">🔑 Dashboard Administrators</h3>
+                <p class="card-description">Authorized user credentials allowed to modify configurations.</p>
+              </div>
+              <div class="card-content">
+                <div class="form-group">
+                  <label>Active User Accounts</label>
+                  <div id="userListContainer" class="user-list">
+                    <div style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-align: center; padding: 1rem;">Loading user accounts...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Create Account Card -->
+            <div class="card" style="height: fit-content;">
+              <div class="card-header">
+                <h3 class="card-title">Add or Update Account</h3>
+                <p class="card-description">Create new admin users or update existing user passwords.</p>
+              </div>
+              <div class="card-content">
+                <form onsubmit="handleSaveUser(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+                  <div class="form-group">
+                    <label for="targetUsername">Username</label>
+                    <input type="text" id="targetUsername" class="form-control" placeholder="e.g. david" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="targetPassword">Password</label>
+                    <input type="password" id="targetPassword" class="form-control" placeholder="Password" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem; align-self: flex-end;">Save Account</button>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB PANE: BROADCAST CONSOLE -->
+        <div class="tab-pane" id="pane-broadcast">
+          <div class="card" style="max-width: 600px; width: 100%;">
+            <div class="card-header">
+              <h3 class="card-title">💬 Group Broadcast Console</h3>
+              <p class="card-description">Send an direct announcement message to any group chat or Telegram user.</p>
+            </div>
+            <div class="card-content">
+              <form onsubmit="sendBroadcastMessage(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="form-group">
+                  <label for="broadcastChatSelect">Target Chat / Group</label>
+                  <select id="broadcastChatSelect" class="form-control" required>
+                    <option value="">-- Select Chat --</option>
+                    <option value="manual">-- Enter Chat ID manually --</option>
+                  </select>
+                  <span class="input-helper">Select a group seen by the bot or type ID manually.</span>
+                </div>
+                <!-- Manual Chat ID Input (Hidden by default) -->
+                <div class="form-group" id="manualChatIdGroup" style="display: none; animation: fadeIn 0.25s ease;">
+                  <label for="broadcastManualChatId">Custom Chat ID / User ID</label>
+                  <input type="text" id="broadcastManualChatId" class="form-control" placeholder="e.g. -100123456789">
+                  <span class="input-helper">Direct Telegram identifier. Group IDs usually prefix with a negative sign.</span>
+                </div>
+                <div class="form-group">
+                  <label for="broadcastMessageText">Message Content</label>
+                  <textarea id="broadcastMessageText" class="form-control" style="min-height: 120px; resize: vertical;" placeholder="Type announcement here..." required></textarea>
+                </div>
+                <button type="submit" id="broadcastSendBtn" class="btn btn-primary" style="align-self: flex-end; min-width: 140px;">Send Announcement</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </main>
     </div>
 
-    <!-- Floating Save Bar -->
+    <!-- Floating Action / Save Changes Bar -->
     <div class="save-bar">
-      <button class="btn btn-secondary" onclick="fetchConfigData()">Discard Changes</button>
-      <button class="btn btn-primary" onclick="saveConfigData()">Save Settings</button>
+      <button class="btn btn-secondary" onclick="fetchConfigData()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+        <span>Discard Changes</span>
+      </button>
+      <button class="btn btn-primary" onclick="saveConfigData()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-save"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Save Settings</span>
+      </button>
     </div>
+  </div>
 
-  </main>
-
-  <!-- Toast notifications -->
+  <!-- Toast notifications container -->
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- Business Logic JS -->
@@ -1058,12 +1499,13 @@
     // Theme Switcher Initialization
     (function initTheme() {
       const storedTheme = localStorage.getItem('theme');
+      const toggleBtn = document.getElementById('themeToggleBtn');
       if (storedTheme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        document.getElementById('themeToggleBtn').innerText = '🌙';
+        if (toggleBtn) toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
       } else {
         document.documentElement.removeAttribute('data-theme');
-        document.getElementById('themeToggleBtn').innerText = '☀️';
+        if (toggleBtn) toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>`;
       }
     })();
 
@@ -1073,12 +1515,12 @@
       if (currentTheme === 'light') {
         document.documentElement.removeAttribute('data-theme');
         localStorage.setItem('theme', 'dark');
-        toggleBtn.innerText = '☀️';
+        toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>`;
         showToast('Switched to Dark Mode', 'success');
       } else {
         document.documentElement.setAttribute('data-theme', 'light');
         localStorage.setItem('theme', 'light');
-        toggleBtn.innerText = '🌙';
+        toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
         showToast('Switched to Light Mode', 'success');
       }
     }
@@ -1096,17 +1538,24 @@
 
     function showLogin() {
       document.getElementById('loginOverlay').classList.add('active');
-      document.getElementById('mainDashboard').style.opacity = '0';
       document.getElementById('mainDashboard').style.display = 'none';
     }
 
     function showDashboard() {
       document.getElementById('loginOverlay').classList.remove('active');
       const dash = document.getElementById('mainDashboard');
-      dash.style.display = 'grid';
-      setTimeout(() => {
-        dash.style.opacity = '1';
-      }, 50);
+      dash.style.display = 'flex';
+      
+      // Update theme toggle icons after login in case element wasn't parsed when initTheme ran
+      const toggleBtn = document.getElementById('themeToggleBtn');
+      if (toggleBtn) {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'light') {
+          toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
+        } else {
+          toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>`;
+        }
+      }
     }
 
     async function verifySession(username, token) {
@@ -1121,6 +1570,8 @@
         });
         if (response.ok) {
           showDashboard();
+          const sidebarUser = document.getElementById('sidebarUserName');
+          if (sidebarUser) sidebarUser.innerText = username;
           fetchConfigData();
           fetchChatsData();
           fetchUsersData();
@@ -1152,6 +1603,9 @@
           sessionStorage.setItem(USERNAME_KEY, data.username);
           sessionStorage.setItem(TOKEN_KEY, data.token);
           
+          const sidebarUser = document.getElementById('sidebarUserName');
+          if (sidebarUser) sidebarUser.innerText = data.username;
+          
           showToast('Access Unlocked', 'success');
           showDashboard();
           fetchConfigData();
@@ -1175,7 +1629,89 @@
       showToast('Dashboard locked', 'success');
     }
 
-    // Tab switcher
+    // Sidebar and Navigation Tabs Switching logic
+    function switchSidebarTab(tabId) {
+      // Toggle sidebar button styles
+      const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+      navItems.forEach(item => {
+        if (item.getAttribute('data-tab') === tabId) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+
+      // Toggle tab panes visible
+      const panes = document.querySelectorAll('.main-content .tab-pane');
+      panes.forEach(pane => {
+        if (pane.id === `pane-${tabId}`) {
+          pane.classList.add('active');
+        } else {
+          pane.classList.remove('active');
+        }
+      });
+
+      // Update Section Header Info
+      const titles = {
+        general: { title: 'General & Features', desc: 'Configure bot features, commands, rate limits, and restrict access.' },
+        prompts: { title: 'System Prompts', desc: 'Customize AI personas and core formatting templates for each command.' },
+        profiles: { title: 'AI Profiles', desc: 'Set up external AI provider endpoints (Gemini, Hugging Face, OpenAI, etc.).' },
+        accounts: { title: 'Admin Accounts', desc: 'Manage dashboard credentials and create additional admin users.' },
+        broadcast: { title: 'Broadcast Console', desc: 'Send announcements and messages directly to groups or chat IDs.' }
+      };
+
+      const headerInfo = titles[tabId] || titles.general;
+      document.getElementById('activeSectionTitle').innerText = headerInfo.title;
+      document.getElementById('activeSectionDesc').innerText = headerInfo.desc;
+
+      // Close mobile drawer on navigation
+      closeMobileSidebar();
+    }
+
+    // Mobile drawer toggles
+    function toggleMobileSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('active');
+    }
+
+    function closeMobileSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Connect Mobile menu listeners
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      if (menuBtn) menuBtn.addEventListener('click', toggleMobileSidebar);
+      
+      const closeBtn = document.getElementById('mobileCloseBtn');
+      if (closeBtn) closeBtn.addEventListener('click', closeMobileSidebar);
+      
+      const overlay = document.getElementById('sidebarOverlay');
+      if (overlay) overlay.addEventListener('click', closeMobileSidebar);
+
+      // Connect navigation items
+      const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+      navItems.forEach(item => {
+        item.addEventListener('click', function() {
+          const tabId = this.getAttribute('data-tab');
+          switchSidebarTab(tabId);
+        });
+      });
+
+      // Initialize theme toggle icon based on current theme
+      const toggleBtn = document.getElementById('themeToggleBtn');
+      if (toggleBtn) {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'light') {
+          toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
+        } else {
+          toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>`;
+        }
+      }
+    });
+
+    // Tab switcher inside System Prompts card
     function switchPromptTab(tabId) {
       const buttons = document.querySelectorAll('#promptTabs .tab-btn');
       buttons.forEach(btn => btn.classList.remove('active'));
@@ -1183,6 +1719,7 @@
       const contents = document.querySelectorAll('#prompts-container .tab-content');
       contents.forEach(content => content.classList.remove('active'));
 
+      // Find prompt tab button by text or content
       const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
       if (clickedBtn) clickedBtn.classList.add('active');
 
@@ -1193,12 +1730,19 @@
     // Toast notifications
     function showToast(message, type = 'success') {
       const container = document.getElementById('toastContainer');
+      if (!container) return;
+
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       
-      const icon = type === 'success' ? '✅' : '❌';
-      toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+      let icon = '';
+      if (type === 'success') {
+        icon = `<span class="toast-icon success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+      } else {
+        icon = `<span class="toast-icon error"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>`;
+      }
       
+      toast.innerHTML = `${icon} <span style="line-height:1.2;">${message}</span>`;
       container.appendChild(toast);
       
       setTimeout(() => {
@@ -1254,16 +1798,17 @@
       if (metadata.kvConnected) {
         badge.innerText = 'Vercel KV Connected';
         badge.className = 'status-badge connected';
-        badge.style.background = '';
         badge.style.borderColor = '';
         badge.style.color = '';
+        badge.style.background = '';
         if (warningBanner) warningBanner.style.display = 'none';
       } else {
-        badge.innerText = '⚠️ Local storage (Temporary)';
-        badge.className = 'status-badge';
-        badge.style.background = 'rgba(239, 68, 68, 0.1)';
-        badge.style.borderColor = 'var(--accent-rose)';
-        badge.style.color = 'var(--accent-rose)';
+        badge.innerText = 'Local Storage (Temp)';
+        badge.className = 'status-badge disconnected';
+        // Match disconnected status style tokens
+        badge.style.borderColor = 'hsl(var(--destructive) / 0.3)';
+        badge.style.color = '#f87171';
+        badge.style.background = 'hsl(var(--destructive) / 0.1)';
         if (warningBanner) {
           warningBanner.style.display = 'flex';
         }
@@ -1355,7 +1900,7 @@
 
         if (response.ok) {
           currentConfig = updatedConfig;
-          showToast('Configurations successfully applied!', 'success');
+          showToast('Configurations applied successfully!', 'success');
           await fetchConfigData();
         } else {
           showToast('Failed to save settings', 'error');
@@ -1424,7 +1969,7 @@
       container.innerHTML = '';
 
       if (profiles.length === 0) {
-        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">No custom profiles configured.</div>';
+        container.innerHTML = '<div style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-align: center; padding: 1rem;">No custom profiles configured.</div>';
         return;
       }
 
@@ -1444,16 +1989,16 @@
 
         const providerBadge = document.createElement('span');
         providerBadge.className = 'user-status-badge';
-        providerBadge.style.background = 'rgba(168, 85, 247, 0.15)';
-        providerBadge.style.color = 'var(--accent-purple)';
-        providerBadge.style.border = '1px solid rgba(168, 85, 247, 0.3)';
+        providerBadge.style.background = 'hsl(var(--primary) / 0.15)';
+        providerBadge.style.color = 'hsl(var(--foreground))';
+        providerBadge.style.border = '1px solid hsl(var(--border))';
         providerBadge.style.marginLeft = '0.25rem';
         providerBadge.innerText = p.provider.toUpperCase();
         info.appendChild(providerBadge);
 
         const modelSpan = document.createElement('span');
         modelSpan.style.fontSize = '0.8rem';
-        modelSpan.style.color = 'var(--text-muted)';
+        modelSpan.style.color = 'hsl(var(--muted-foreground))';
         modelSpan.innerText = `(${p.model})`;
         info.appendChild(modelSpan);
 
@@ -1472,7 +2017,7 @@
         if (p.id !== activeProfileId) {
           const activateBtn = document.createElement('button');
           activateBtn.className = 'user-action-btn toggle-activate';
-          activateBtn.innerText = '▶️ Activate';
+          activateBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg> Activate`;
           activateBtn.onclick = async () => {
             currentConfig.activeProfileId = p.id;
             await saveConfigData();
@@ -1481,14 +2026,14 @@
         }
 
         const editBtn = document.createElement('button');
-        editBtn.className = 'user-action-btn reset-pwd';
-        editBtn.innerText = '✏️ Edit';
+        editBtn.className = 'user-action-btn';
+        editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit`;
         editBtn.onclick = () => startEditProfile(p);
         actionsDiv.appendChild(editBtn);
 
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'user-action-btn delete-btn';
-        deleteBtn.innerText = '🗑️ Delete';
+        deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg> Delete`;
         deleteBtn.onclick = () => handleDeleteProfile(p.id, p.name);
         actionsDiv.appendChild(deleteBtn);
 
@@ -1503,11 +2048,11 @@
       document.getElementById('profileProvider').value = profile.provider;
       document.getElementById('profileBaseURL').value = profile.baseURL || '';
       document.getElementById('profileModel').value = profile.model;
-      document.getElementById('profileApiKey').value = ''; // Leave blank to not change unless typed
+      document.getElementById('profileApiKey').value = ''; 
       document.getElementById('profileFormTitle').innerText = 'Edit AI Profile';
       document.getElementById('cancelProfileEditBtn').style.display = 'inline-flex';
       
-      // Scroll form into view
+      // Scroll form card into view smoothly
       document.getElementById('profileForm').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1538,10 +2083,9 @@
       }
 
       if (id) {
-        // Edit existing
+        // Edit existing profile
         const index = currentConfig.profiles.findIndex(p => p.id === id);
         if (index !== -1) {
-          // If apiKey is empty, retain the old API key
           const existingKey = currentConfig.profiles[index].apiKey;
           currentConfig.profiles[index] = {
             id,
@@ -1554,7 +2098,7 @@
           showToast(`Profile "${name}" updated.`, 'success');
         }
       } else {
-        // Create new
+        // Create new profile
         const newProfile = {
           id: Date.now().toString(),
           name,
@@ -1694,7 +2238,7 @@
         const data = await response.json();
 
         if (response.ok) {
-          showToast('Message broadcasted successfully!', 'success');
+          showToast('Announcement broadcasted successfully!', 'success');
           document.getElementById('broadcastMessageText').value = '';
         } else {
           showToast(data.error || 'Failed to send broadcast.', 'error');
@@ -1703,7 +2247,7 @@
         console.error(err);
         showToast('Broadcast connection failure.', 'error');
       } finally {
-        sendBtn.innerText = 'Send Message';
+        sendBtn.innerText = 'Send Announcement';
         sendBtn.disabled = false;
       }
     }
@@ -1735,12 +2279,13 @@
 
     function renderUsersList(users) {
       const container = document.getElementById('userListContainer');
+      if (!container) return;
       container.innerHTML = '';
       
       const currentUser = sessionStorage.getItem(USERNAME_KEY);
 
       if (users.length === 0) {
-        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem;">No administrators configured.</div>';
+        container.innerHTML = '<div style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-align: center; padding: 1rem;">No administrators configured.</div>';
         return;
       }
 
@@ -1757,7 +2302,7 @@
         nameSpan.className = 'user-name';
         nameSpan.innerText = u.username;
         if (u.username.toLowerCase() === currentUser.toLowerCase()) {
-          nameSpan.innerHTML += ' <span style="font-size: 0.75rem; color: var(--accent-teal); font-weight: normal;">(You)</span>';
+          nameSpan.innerHTML += ' <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: normal;">(You)</span>';
         }
         userInfo.appendChild(nameSpan);
 
@@ -1775,7 +2320,11 @@
         if (u.username.toLowerCase() !== 'admin' && u.username.toLowerCase() !== currentUser.toLowerCase()) {
           const toggleBtn = document.createElement('button');
           toggleBtn.className = 'user-action-btn ' + (u.isActive ? 'toggle-deactivate' : 'toggle-activate');
-          toggleBtn.innerText = u.isActive ? '⏸️ Deactivate' : '▶️ Activate';
+          if (u.isActive) {
+            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg> Suspend`;
+          } else {
+            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg> Activate`;
+          }
           toggleBtn.onclick = () => handleToggleUser(u.username);
           actionsDiv.appendChild(toggleBtn);
         }
@@ -1784,8 +2333,8 @@
         // or for the logged in user themselves (even if they are the fallback 'admin'!).
         if (u.username.toLowerCase() !== 'admin' || u.username.toLowerCase() === currentUser.toLowerCase()) {
           const resetBtn = document.createElement('button');
-          resetBtn.className = 'user-action-btn reset-pwd';
-          resetBtn.innerText = '🔑 Reset';
+          resetBtn.className = 'user-action-btn';
+          resetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> Password`;
           resetBtn.onclick = () => handleResetPassword(u.username);
           actionsDiv.appendChild(resetBtn);
         }
@@ -1794,7 +2343,7 @@
         if (u.username.toLowerCase() !== 'admin' && u.username.toLowerCase() !== currentUser.toLowerCase()) {
           const deleteBtn = document.createElement('button');
           deleteBtn.className = 'user-action-btn delete-btn';
-          deleteBtn.innerText = '🗑️ Delete';
+          deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg> Delete`;
           deleteBtn.onclick = () => handleDeleteUser(u.username);
           actionsDiv.appendChild(deleteBtn);
         }
@@ -1836,7 +2385,7 @@
     async function handleResetPassword(targetUsername) {
       const newPassword = prompt(`Enter new password for user "${targetUsername}":`);
       if (newPassword === null) {
-        return; // User cancelled
+        return; 
       }
       if (newPassword.trim() === '') {
         showToast('Password cannot be empty.', 'error');
@@ -1861,7 +2410,6 @@
 
         if (response.ok) {
           showToast(data.message || 'Password changed successfully.', 'success');
-          // If the password reset was for the current logged-in user, update their token
           if (targetUsername.toLowerCase() === user.toLowerCase() && data.newToken) {
             sessionStorage.setItem(TOKEN_KEY, data.newToken);
           }
