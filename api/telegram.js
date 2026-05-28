@@ -611,7 +611,7 @@ export default async function handler(req, res) {
     await sendTelegramMessage(
       botToken,
       chatId,
-      `សុំបិទតូបសិនហើយបាទ👌`
+      `សុំបិទម៉ាភ្លែតសិន ខ្ញុំមិនអាចប្រតិបត្តិការនេះបានទេ។\n⚙️ The /${commandType} command has been disabled by the administrator.`,
     );
     res.status(200).send("Command disabled.");
     return;
@@ -762,15 +762,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  // --- All remaining commands require API key ----------------------
-  if (!aiConfig.apiKey) {
-    console.error("Missing AI API Key.");
+  // --- All remaining commands require HF_TOKEN ----------------------
+  if (!hfToken) {
+    console.error("Missing HF_TOKEN.");
     await sendTelegramMessage(
       botToken,
       chatId,
-      "⚙️ AI API key is not configured — I can't process commands right now.",
+      "⚙️ HF_TOKEN is not configured — I can't process commands right now.",
     );
-    res.status(200).send("Missing AI API Key.");
+    res.status(200).send("Missing HF_TOKEN.");
     return;
   }
 
@@ -793,7 +793,7 @@ export default async function handler(req, res) {
 
     // ---- /quote ----------------------------------------------------
     if (commandType === "quote") {
-      const { quote, tradition } = await generateQuote(aiConfig, chatId, config.systemPrompts);
+      const { quote, tradition } = await generateQuote(hfToken, chatId, config.systemPrompts, config.hfModel);
       const formatted = formatResponse("quote", quote, tradition);
       await sendTelegramMessage(botToken, chatId, formatted, "HTML");
 
@@ -845,7 +845,7 @@ export default async function handler(req, res) {
         `Full chat context:\n${truncated}`;
     }
 
-    const result = await callLLM(prompt, aiConfig, commandType, config.systemPrompts);
+    const result = await callLLM(prompt, hfToken, commandType, config.systemPrompts, config.hfModel);
     const responseText = formatResponse(commandType, result);
     await sendTelegramMessage(botToken, chatId, responseText, "HTML");
 
