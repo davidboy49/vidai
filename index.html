@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vidai Control Panel</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: rgba(17, 24, 39, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #f3f4f6;
+      --text-muted: #9ca3af;
+      
+      /* Vibrant gradients */
+      --accent-teal: #06b6d4;
+      --accent-purple: #a855f7;
+      --accent-rose: #f43f5e;
+      --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #a855f7 100%);
+      --gradient-glow: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%);
+      
+      --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      --glass-blur: blur(12px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient background glow */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -10%;
+      right: -10%;
+      width: 50vw;
+      height: 50vw;
+      background: var(--gradient-glow);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      bottom: -10%;
+      left: -10%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(11, 15, 25, 0.5);
+      backdrop-filter: var(--glass-blur);
+      z-index: 10;
+    }
+
+    header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    header h1 span {
+      background: initial;
+      -webkit-text-fill-color: initial;
+      font-size: 1.2rem;
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-rose);
+      background: rgba(244, 63, 94, 0.1);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 900px) {
+      main {
+        grid-template-columns: 350px 1fr;
+      }
+    }
+
+    /* Dashboard Cards */
+    .card {
+      background: var(--bg-secondary);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Form Styles */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .form-control {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-teal);
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+
+    .input-helper {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Switch Toggles */
+    .switch-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .switch-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    .switch-label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .switch-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .switch-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: .4s;
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+    }
+
+    .slider::before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    input:checked + .slider {
+      background: var(--gradient-primary);
+      border-color: transparent;
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px #06b6d4;
+    }
+
+    input:checked + .slider::before {
+      transform: translateX(24px);
+    }
+
+    /* Tabs Layout */
+    .tabs-header {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding-bottom: 2px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.75rem 1.25rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-teal);
+      border-bottom-color: var(--accent-teal);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Main Save Buttons */
+    .save-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      backdrop-filter: var(--glass-blur);
+    }
+
+    .btn {
+      padding: 0.75rem 1.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Login Modal Overlay */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(7, 10, 18, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .login-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      text-align: center;
+      animation: scaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .login-icon {
+      font-size: 3rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .login-card h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      z-index: 1000;
+    }
+
+    .toast {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      backdrop-filter: var(--glass-blur);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 300px;
+      transform: translateX(120%);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--accent-teal);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--accent-rose);
+    }
+
+    .toast.active {
+      transform: translateX(0);
+    }
+
+    /* Keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Stats Indicator */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+    }
+
+    .status-badge.connected::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-teal);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-teal);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Lock Screen / Login Overlay -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-icon">🔒</div>
+      <h2>Vidai Bot</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Please enter the administrator password to manage features.</p>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <input type="password" id="adminPasswordInput" class="form-control" placeholder="Admin Password" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Unlock Dashboard</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <h1>Vidai Bot <span>Control Panel</span></h1>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <div class="status-badge connected">Database Connected</div>
+      <button class="logout-btn" onclick="handleLogout()">Lock Panel</button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main id="mainDashboard" style="opacity: 0; transition: opacity 0.5s ease;">
+    
+    <!-- Sidebar: Limits & Toggles -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+      
+      <!-- Feature Toggles -->
+      <div class="card">
+        <h2 class="card-title">Bot Features <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Active Toggles</span></h2>
+        <div class="switch-list">
+          
+          <div class="switch-item">
+            <div class="switch-label">
+              <span class="switch-name">Chit-Chat</span>
+              <span class="switch-desc">Conversations via replies/mentions</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-chitchat" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-item">
+            <div class="switch-label">
+              <span class="switch-name">Summary (/summary)</span>
+              <span class="switch-desc">Generate TL;DR group logs</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-summary" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-item">
+            <div class="switch-label">
+              <span class="switch-name">Activity (/activity)</span>
+              <span class="switch-desc">Recent dialogue highlights</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-activity" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-item">
+            <div class="switch-label">
+              <span class="switch-name">Group Mood (/mood)</span>
+              <span class="switch-desc">Emotional vibes analysis</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-mood" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-item">
+            <div class="switch-label">
+              <span class="switch-name">Roast Chat (/roast)</span>
+              <span class="switch-desc">Sarcastic, playful chat review</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-roast" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-item">
+            <div class="switch-label">
+              <span class="switch-name">Philosophy Quotes (/quote)</span>
+              <span class="switch-desc">Random Stoic/Greek/Chinese quotes</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-quote" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Access Control Settings -->
+      <div class="card">
+        <h2 class="card-title">Permissions</h2>
+        
+        <div class="switch-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+          <div class="switch-label">
+            <span class="switch-name">Restrict to Admins</span>
+            <span class="switch-desc">Only group admins can use the bot</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="restrictToAdmins">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="allowedUserIds">Whitelist User IDs</label>
+          <input type="text" id="allowedUserIds" class="form-control" placeholder="e.g. 1234567, 9876543">
+          <span class="input-helper">Comma-separated Telegram user IDs. Leave empty to allow all users.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Panel: Model & Prompts -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+      
+      <!-- General parameters -->
+      <div class="card">
+        <h2 class="card-title">Model & Performance</h2>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
+          
+          <div class="form-group">
+            <label for="hfModel">Hugging Face Model Router Path</label>
+            <input type="text" id="hfModel" class="form-control" placeholder="mistralai/Mistral-7B-Instruct-v0.2:featherless-ai">
+            <span class="input-helper">The model identifier used via HF router API.</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            
+            <div class="form-group">
+              <label for="commandCooldown">Command Cooldown (s)</label>
+              <input type="number" id="commandCooldown" class="form-control" min="0" placeholder="5">
+            </div>
+
+            <div class="form-group">
+              <label for="chitchatLimitCount">Chit-Chat Cooldown Limit</label>
+              <input type="number" id="chitchatLimitCount" class="form-control" min="1" placeholder="5">
+              <span class="input-helper">Messages count threshold</span>
+            </div>
+
+            <div class="form-group">
+              <label for="chitchatLimitWindow">Chit-Chat Cooldown Window (s)</label>
+              <input type="number" id="chitchatLimitWindow" class="form-control" min="1" placeholder="120">
+              <span class="input-helper">Time window to trigger Khmer joke</span>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Prompts Editor -->
+      <div class="card" style="flex: 1;">
+        <h2 class="card-title">Dynamic System Prompts</h2>
+        
+        <div class="tabs-header" id="promptTabs">
+          <button class="tab-btn active" onclick="switchPromptTab('chitchat')">Chit-Chat</button>
+          <button class="tab-btn" onclick="switchPromptTab('summary')">Summary</button>
+          <button class="tab-btn" onclick="switchPromptTab('activity')">Activity</button>
+          <button class="tab-btn" onclick="switchPromptTab('mood')">Mood</button>
+          <button class="tab-btn" onclick="switchPromptTab('roast')">Roast</button>
+          <button class="tab-btn" onclick="switchPromptTab('quote')">Philosophy Quotes</button>
+        </div>
+
+        <div id="prompts-container">
+          
+          <!-- Chit Chat Tab -->
+          <div id="tab-chitchat" class="tab-content active">
+            <div class="form-group" style="height: 100%;">
+              <label for="prompt-chitchat">Chit-Chat Personality & Guidelines</label>
+              <textarea id="prompt-chitchat" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+            </div>
+          </div>
+
+          <!-- Summary Tab -->
+          <div id="tab-summary" class="tab-content">
+            <div class="form-group">
+              <label for="prompt-summary">Summary Style instructions</label>
+              <textarea id="prompt-summary" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+            </div>
+          </div>
+
+          <!-- Activity Tab -->
+          <div id="tab-activity" class="tab-content">
+            <div class="form-group">
+              <label for="prompt-activity">Activity Highlights guidelines</label>
+              <textarea id="prompt-activity" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+            </div>
+          </div>
+
+          <!-- Mood Tab -->
+          <div id="tab-mood" class="tab-content">
+            <div class="form-group">
+              <label for="prompt-mood">Sentiment mood instructions</label>
+              <textarea id="prompt-mood" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+            </div>
+          </div>
+
+          <!-- Roast Tab -->
+          <div id="tab-roast" class="tab-content">
+            <div class="form-group">
+              <label for="prompt-roast">Roasting Instructions & Safety levels</label>
+              <textarea id="prompt-roast" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;"></textarea>
+            </div>
+          </div>
+
+          <!-- Quote Tab -->
+          <div id="tab-quote" class="tab-content">
+            <div class="form-group">
+              <label for="prompt-quote">Philosophical quotes template formatting</label>
+              <textarea id="prompt-quote" class="form-control" style="min-height: 180px; resize: vertical; line-height: 1.5; font-family: monospace;" placeholder="Leave blank to use internal default logic..."></textarea>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating/Bottom Save Bar -->
+    <div class="save-bar">
+      <button class="btn btn-secondary" onclick="fetchConfigData()">Discard Changes</button>
+      <button class="btn btn-primary" onclick="saveConfigData()">Save Changes</button>
+    </div>
+
+  </main>
+
+  <!-- Toast notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Business Logic JS -->
+  <script>
+    let currentConfig = {};
+    const STORAGE_KEY = 'vidai_admin_password';
+
+    // Run on page load
+    window.onload = function() {
+      const storedPass = sessionStorage.getItem(STORAGE_KEY);
+      if (storedPass) {
+        showDashboard();
+        fetchConfigData();
+      } else {
+        showLogin();
+      }
+    };
+
+    function showLogin() {
+      document.getElementById('loginOverlay').classList.add('active');
+      document.getElementById('mainDashboard').style.opacity = '0';
+    }
+
+    function showDashboard() {
+      document.getElementById('loginOverlay').classList.remove('active');
+      const dash = document.getElementById('mainDashboard');
+      dash.style.opacity = '1';
+      dash.style.display = 'grid';
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const pass = document.getElementById('adminPasswordInput').value;
+      if (pass) {
+        sessionStorage.setItem(STORAGE_KEY, pass);
+        showDashboard();
+        fetchConfigData();
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem(STORAGE_KEY);
+      document.getElementById('adminPasswordInput').value = '';
+      showLogin();
+      showToast('Dashboard locked successfully', 'success');
+    }
+
+    // Tab switcher
+    function switchPromptTab(tabId) {
+      // Deactivate all tab header buttons
+      const buttons = document.querySelectorAll('#promptTabs .tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      
+      // Deactivate all tab contents
+      const contents = document.querySelectorAll('#prompts-container .tab-content');
+      contents.forEach(content => content.classList.remove('active'));
+
+      // Find and activate requested tab
+      const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
+      if (clickedBtn) clickedBtn.classList.add('active');
+
+      const targetContent = document.getElementById(`tab-${tabId}`);
+      if (targetContent) targetContent.classList.add('active');
+    }
+
+    // Toast notification manager
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icon = type === 'success' ? '✅' : '❌';
+      toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+      
+      container.appendChild(toast);
+      
+      // Force repaint to trigger CSS animation
+      setTimeout(() => {
+        toast.classList.add('active');
+      }, 50);
+
+      // Remove after 4 seconds
+      setTimeout(() => {
+        toast.classList.remove('active');
+        setTimeout(() => toast.remove(), 400);
+      }, 4000);
+    }
+
+    // Get config from server
+    async function fetchConfigData() {
+      const pass = sessionStorage.getItem(STORAGE_KEY);
+      try {
+        const response = await fetch('/api/config', {
+          headers: {
+            'X-Admin-Password': pass
+          }
+        });
+
+        if (response.status === 401) {
+          showToast('Invalid admin password. Please try locking & logging in again.', 'error');
+          handleLogout();
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('Server returned error status ' + response.status);
+        }
+
+        const data = await response.json();
+        currentConfig = data;
+        populateForm(data);
+        showToast('Configuration loaded successfully', 'success');
+      } catch (err) {
+        console.error('Fetch error:', err);
+        showToast('Failed to load configuration from server', 'error');
+      }
+    }
+
+    // Populate UI fields from loaded data
+    function populateForm(data) {
+      document.getElementById('hfModel').value = data.hfModel || '';
+      document.getElementById('restrictToAdmins').checked = !!data.restrictToAdmins;
+      document.getElementById('allowedUserIds').value = data.allowedUserIds || '';
+      document.getElementById('commandCooldown').value = data.commandCooldown ?? 5;
+      document.getElementById('chitchatLimitCount').value = data.chitchatLimitCount ?? 5;
+      document.getElementById('chitchatLimitWindow').value = data.chitchatLimitWindow ?? 120;
+      
+      // Feature switches
+      const disabledFeatures = data.disabledFeatures || [];
+      
+      const features = ['chitchat', 'summary', 'activity', 'mood', 'roast', 'quote'];
+      features.forEach(f => {
+        const toggle = document.getElementById(`toggle-${f}`);
+        if (toggle) {
+          toggle.checked = !disabledFeatures.includes(f);
+        }
+      });
+
+      // Prompts
+      const prompts = data.systemPrompts || {};
+      features.forEach(f => {
+        const txt = document.getElementById(`prompt-${f}`);
+        if (txt) {
+          txt.value = prompts[f] || '';
+        }
+      });
+    }
+
+    // Save configuration back to server
+    async function saveConfigData() {
+      const pass = sessionStorage.getItem(STORAGE_KEY);
+      
+      // Read feature switches to find disabled features
+      const disabledFeatures = [];
+      const features = ['chitchat', 'summary', 'activity', 'mood', 'roast', 'quote'];
+      features.forEach(f => {
+        const toggle = document.getElementById(`toggle-${f}`);
+        if (toggle && !toggle.checked) {
+          disabledFeatures.push(f);
+        }
+      });
+
+      // Read prompts values
+      const systemPrompts = {};
+      features.forEach(f => {
+        const txt = document.getElementById(`prompt-${f}`);
+        if (txt) {
+          systemPrompts[f] = txt.value;
+        }
+      });
+
+      const updatedConfig = {
+        hfModel: document.getElementById('hfModel').value.trim(),
+        restrictToAdmins: document.getElementById('restrictToAdmins').checked,
+        allowedUserIds: document.getElementById('allowedUserIds').value.trim(),
+        commandCooldown: parseInt(document.getElementById('commandCooldown').value) || 5,
+        chitchatLimitCount: parseInt(document.getElementById('chitchatLimitCount').value) || 5,
+        chitchatLimitWindow: parseInt(document.getElementById('chitchatLimitWindow').value) || 120,
+        disabledFeatures: disabledFeatures,
+        systemPrompts: systemPrompts
+      };
+
+      try {
+        const response = await fetch('/api/config', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Password': pass
+          },
+          body: JSON.stringify(updatedConfig)
+        });
+
+        if (response.status === 401) {
+          showToast('Session expired or incorrect credentials.', 'error');
+          handleLogout();
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('Save error ' + response.status);
+        }
+
+        currentConfig = updatedConfig;
+        showToast('Configurations successfully saved & applied!', 'success');
+      } catch (err) {
+        console.error('Save error:', err);
+        showToast('Failed to save settings to server', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "hfModel": "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
+  "restrictToAdmins": false,
+  "allowedUserIds": "",
+  "disabledFeatures": [],
+  "commandCooldown": 5,
+  "chitchatLimitCount": 5,
+  "chitchatLimitWindow": 120,
+  "systemPrompts": {
+    "activity": "Look at the last 3 messages and provide one-line activity highlights.",
+    "summary": "Look at the last 3 messages and provide a one-line TL;DR summary.",
+    "quote": "Generate one short quote from the requested tradition (Greek, Chinese, or Stoic) and include the author. Prefer real, well-known quotes when possible. Format exactly as: \"<quote>\" — <author>.",
+    "mood": "Analyze the emotional tone of these messages. Respond with a single emoji representing the overall mood, followed by a one-line description. Keep it short and fun.",
+    "roast": "Give a short, playful, lighthearted roast of the chat activity. Be funny but not mean-spirited. Keep it under 3 sentences.",
+    "chitchat": "You are Vidai, a professional, objective, and polite AI assistant in a Telegram group chat. Provide clear, direct, and concise responses (1 to 3 sentences max). Maintain a helpful yet formal tone. Avoid overly casual language, excessive emoji, or conversational filler."
+  }
+}

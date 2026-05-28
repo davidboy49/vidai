@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { getConfig } from "./_db.js";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                         */
@@ -105,11 +106,12 @@ function addRecentQuoteForChat(chatId, quoteText) {
  * Returns the number of seconds remaining in the cooldown, or 0 if the
  * chat is allowed to run another command.
  */
-function checkRateLimit(chatId) {
+function checkRateLimit(chatId, commandCooldownSeconds) {
+  const cooldownMs = (commandCooldownSeconds ?? 5) * 1000;
   const entry = getEntry(chatId);
   const elapsed = Date.now() - entry.lastCommandAt;
-  if (elapsed < COMMAND_COOLDOWN_MS) {
-    return Math.ceil((COMMAND_COOLDOWN_MS - elapsed) / 1000);
+  if (elapsed < cooldownMs) {
+    return Math.ceil((cooldownMs - elapsed) / 1000);
   }
   return 0;
 }
@@ -121,7 +123,7 @@ function updateRateLimit(chatId) {
 /**
  * Returns true if the user has sent too many chit-chat messages in a short window.
  */
-function checkUserChitChatLimit(chatId, userId) {
+function checkUserChitChatLimit(chatId, userId, limitCount, limitWindowSeconds) {
   if (!userId) return false;
   const entry = getEntry(chatId);
   if (!entry.userChitChat) {
@@ -131,14 +133,17 @@ function checkUserChitChatLimit(chatId, userId) {
     entry.userChitChat[userId] = [];
   }
 
+  const limitCountVal = limitCount ?? 5;
+  const limitWindowMs = (limitWindowSeconds ?? 120) * 1000;
+
   const now = Date.now();
-  // Filter out timestamps older than 2 minutes (120,000 ms)
+  // Filter out timestamps older than the dynamic window
   entry.userChitChat[userId] = entry.userChitChat[userId].filter(
-    (ts) => now - ts < 120_000
+    (ts) => now - ts < limitWindowMs
   );
 
-  // If they have 5 or more messages in the last 2 minutes, trigger the joke
-  if (entry.userChitChat[userId].length >= 5) {
+  // If they have limitCount or more messages in the last limitWindowSeconds, trigger the joke
+  if (entry.userChitChat[userId].length >= limitCountVal) {
     return true;
   }
 
@@ -171,20 +176,16 @@ function cleanChitChatText(text, botUsername) {
   return text.replace(mentionRegex, "").trim();
 }
 
-function isUserWhitelisted(userId) {
-  const allowedStr = process.env.ALLOWED_USER_IDS;
-  if (!allowedStr) return true; // Whitelist disabled by default
+function isUserWhitelisted(userId, allowedUserIds) {
+  if (!allowedUserIds) return true; // Whitelist disabled by default
 
-  const allowedIds = allowedStr.split(",").map((id) => id.trim());
+  const allowedIds = allowedUserIds.split(",").map((id) => id.trim());
   return allowedIds.includes(String(userId));
 }
 
-function isFeatureDisabled(featureName) {
-  const disabledStr = process.env.DISABLE_FEATURES;
-  if (!disabledStr) return false;
-
-  const disabledFeatures = disabledStr.split(",").map((f) => f.trim().toLowerCase());
-  return disabledFeatures.includes(featureName.toLowerCase());
+function isFeatureDisabled(featureName, disabledFeatures) {
+  if (!disabledFeatures || !Array.isArray(disabledFeatures)) return false;
+  return disabledFeatures.some((f) => f.toLowerCase() === featureName.toLowerCase());
 }
 
 async function isChatAdmin(botToken, chatId, userId) {
@@ -207,8 +208,8 @@ async function isChatAdmin(botToken, chatId, userId) {
   }
 }
 
-async function checkAdminRestriction(botToken, chat, user) {
-  if (process.env.RESTRICT_TO_ADMINS !== "true") {
+async function checkAdminRestriction(botToken, chat, user, restrictToAdmins) {
+  if (!restrictToAdmins) {
     return true; // Not restricted
   }
   if (chat?.type === "private") {
@@ -224,7 +225,11 @@ async function checkAdminRestriction(botToken, chat, user) {
 /*  System prompts                                                    */
 /* ------------------------------------------------------------------ */
 
-function getSystemPrompt(commandType) {
+function getSystemPrompt(commandType, systemPrompts) {
+  if (systemPrompts && systemPrompts[commandType]) {
+    return systemPrompts[commandType];
+  }
+
   switch (commandType) {
     case "activity":
       return "Look at the last 3 messages and provide one-line activity highlights.";
@@ -267,16 +272,16 @@ function getSystemPrompt(commandType) {
 /*  LLM interaction                                                   */
 /* ------------------------------------------------------------------ */
 
-async function callLLM(text, hfToken, commandType) {
+async function callLLM(text, hfToken, commandType, systemPrompts, modelOverride) {
   const client = getClient(hfToken);
   const model =
-    process.env.HF_MODEL ||
+    modelOverride ||
     "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai";
 
   const completion = await client.chat.completions.create({
     model,
     messages: [
-      { role: "system", content: getSystemPrompt(commandType) },
+      { role: "system", content: getSystemPrompt(commandType, systemPrompts) },
       { role: "user", content: text },
     ],
     max_tokens: 200,
@@ -294,7 +299,7 @@ async function callLLM(text, hfToken, commandType) {
  * Generate a unique quote and return both the text and the tradition used,
  * so we can pick the right emoji reaction.
  */
-async function generateQuote(hfToken, chatId) {
+async function generateQuote(hfToken, chatId, systemPrompts, modelOverride) {
   const recentQuotes = getRecentQuotesForChat(chatId);
 
   for (let attempt = 0; attempt < QUOTE_GENERATION_RETRIES; attempt += 1) {
@@ -303,6 +308,8 @@ async function generateQuote(hfToken, chatId) {
       `Please give me one random ${tradition} quote. Avoid repeating any of these recent quotes: ${recentQuotes.join(" | ") || "none"}.`,
       hfToken,
       "quote",
+      systemPrompts,
+      modelOverride
     );
 
     if (!recentQuotes.includes(normalizeQuoteText(quote))) {
@@ -317,6 +324,8 @@ async function generateQuote(hfToken, chatId) {
     `Please give me one random ${fallbackTradition} quote with author.`,
     hfToken,
     "quote",
+    systemPrompts,
+    modelOverride
   );
   addRecentQuoteForChat(chatId, fallbackQuote);
   return { quote: fallbackQuote, tradition: fallbackTradition };
@@ -515,6 +524,9 @@ export default async function handler(req, res) {
     return;
   }
 
+  // --- Load configuration dynamically -------------------------------
+  const config = await getConfig();
+
   // --- Parse the incoming Telegram update ---------------------------
   let update;
   try {
@@ -546,13 +558,38 @@ export default async function handler(req, res) {
   }
 
   // --- Whitelist check ----------------------------------------------
-  if (!isUserWhitelisted(message.from?.id)) {
+  if (!isUserWhitelisted(message.from?.id, config.allowedUserIds)) {
     res.status(200).send("User not whitelisted.");
     return;
   }
 
   const botUsername = process.env.TELEGRAM_BOT_USERNAME;
   const commandType = getCommandType(text, botUsername);
+
+  // --- Feature disabled check ----------------------------------------
+  if (commandType && isFeatureDisabled(commandType, config.disabledFeatures)) {
+    res.status(200).send("Command disabled.");
+    return;
+  }
+
+  // --- Admin restriction check ---------------------------------------
+  if (commandType) {
+    const isAllowed = await checkAdminRestriction(
+      botToken,
+      message.chat,
+      message.from,
+      config.restrictToAdmins
+    );
+    if (!isAllowed) {
+      await sendTelegramMessage(
+        botToken,
+        chatId,
+        "🔒 This bot's commands are restricted to group administrators."
+      );
+      res.status(200).send("Restricted to admins.");
+      return;
+    }
+  }
 
   // --- Cache non-command messages with sender attribution -----------
   if (!commandType) {
@@ -566,31 +603,22 @@ export default async function handler(req, res) {
       addMessageToCache(chatId, senderName, cleanText, message.date);
 
       if (isChitChatTrigger(message, text, botUsername)) {
-        // Check if chit-chat is disabled
-        if (isFeatureDisabled("chitchat")) {
-          await sendTelegramMessage(
-            botToken,
-            chatId,
-            "⚙️ Conversational chit-chat is currently disabled.",
-            null,
-            message.message_id
-          );
+        // Check if chit-chat feature is disabled
+        if (isFeatureDisabled("chitchat", config.disabledFeatures)) {
           res.status(200).send("Chit-chat disabled.");
           return;
         }
 
-        // Check if restricted to admins
-        const hasAccess = await checkAdminRestriction(botToken, message.chat, message.from);
-        if (!hasAccess) {
-          await sendTelegramMessage(
-            botToken,
-            chatId,
-            "⚠️ This action is restricted to group administrators.",
-            null,
-            message.message_id
-          );
-          res.status(200).send("Access restricted.");
-          return;
+        // Check if chit-chat is restricted to admins
+        const isAllowed = await checkAdminRestriction(
+          botToken,
+          message.chat,
+          message.from,
+          config.restrictToAdmins
+        );
+        if (!isAllowed) {
+          res.status(200).send("Chit-chat restricted to admins.");
+          return; // Silently ignore non-admin chit-chat triggers to prevent spam
         }
 
         if (!hfToken) {
@@ -606,8 +634,15 @@ export default async function handler(req, res) {
           return;
         }
 
-        // Check if user is chatting too much (5 messages per 2 minutes)
-        if (checkUserChitChatLimit(chatId, message.from?.id)) {
+        // Check if user is chatting too much (dynamic cooldown check)
+        if (
+          checkUserChitChatLimit(
+            chatId,
+            message.from?.id,
+            config.chitchatLimitCount,
+            config.chitchatLimitWindow
+          )
+        ) {
           await sendTelegramMessage(
             botToken,
             chatId,
@@ -629,7 +664,13 @@ export default async function handler(req, res) {
           
           const prompt = `This is a live chat. Reply to the last message.\n\nChat History:\n${combined}`;
           
-          const result = await callLLM(prompt, hfToken, "chitchat");
+          const result = await callLLM(
+            prompt,
+            hfToken,
+            "chitchat",
+            config.systemPrompts,
+            config.hfModel
+          );
           
           await sendTelegramMessage(
             botToken,
@@ -658,33 +699,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  // --- Check if command is disabled globally ------------------------
-  if (isFeatureDisabled(commandType)) {
-    await sendTelegramMessage(
-      botToken,
-      chatId,
-      `⚙️ The /${commandType} command is currently disabled.`,
-      null,
-      message.message_id
-    );
-    res.status(200).send("Command disabled.");
-    return;
-  }
-
-  // --- Admin restriction check --------------------------------------
-  const hasAccess = await checkAdminRestriction(botToken, message.chat, message.from);
-  if (!hasAccess) {
-    await sendTelegramMessage(
-      botToken,
-      chatId,
-      "⚠️ This action is restricted to group administrators.",
-      null,
-      message.message_id
-    );
-    res.status(200).send("Access restricted.");
-    return;
-  }
-
   // --- /help (no LLM needed) ---------------------------------------
   if (commandType === "help") {
     try {
@@ -709,7 +723,7 @@ export default async function handler(req, res) {
   }
 
   // --- Rate limiting ------------------------------------------------
-  const cooldownRemaining = checkRateLimit(chatId);
+  const cooldownRemaining = checkRateLimit(chatId, config.commandCooldown);
   if (cooldownRemaining > 0) {
     await sendTelegramMessage(
       botToken,
@@ -727,7 +741,7 @@ export default async function handler(req, res) {
 
     // ---- /quote ----------------------------------------------------
     if (commandType === "quote") {
-      const { quote, tradition } = await generateQuote(hfToken, chatId);
+      const { quote, tradition } = await generateQuote(hfToken, chatId, config.systemPrompts, config.hfModel);
       const formatted = formatResponse("quote", quote, tradition);
       await sendTelegramMessage(botToken, chatId, formatted, "HTML");
 
@@ -779,7 +793,7 @@ export default async function handler(req, res) {
         `Full chat context:\n${truncated}`;
     }
 
-    const result = await callLLM(prompt, hfToken, commandType);
+    const result = await callLLM(prompt, hfToken, commandType, config.systemPrompts, config.hfModel);
     const responseText = formatResponse(commandType, result);
     await sendTelegramMessage(botToken, chatId, responseText, "HTML");
 
