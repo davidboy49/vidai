@@ -631,6 +631,103 @@
       font-weight: 500;
     }
 
+    /* Shadcn UI Table Styles */
+    .shadcn-table-container {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background-color: hsl(var(--card));
+      box-shadow: var(--shadow-sm);
+    }
+
+    .shadcn-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    .shadcn-table th {
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: hsl(var(--muted-foreground));
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid hsl(var(--border));
+      background-color: hsl(var(--secondary) / 0.5);
+    }
+
+    .shadcn-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid hsl(var(--border));
+      color: hsl(var(--foreground));
+      vertical-align: middle;
+    }
+
+    .shadcn-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .shadcn-table tr {
+      transition: background-color 0.2s ease;
+    }
+
+    .shadcn-table tr:hover {
+      background-color: hsl(var(--muted) / 0.15);
+    }
+
+    /* Small Switch for Active/Inactive table inline controls */
+    .table-switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .table-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .table-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: hsl(var(--secondary));
+      transition: .2s ease;
+      border-radius: 9999px;
+      border: 1px solid hsl(var(--border));
+    }
+
+    .table-slider::before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 2px;
+      bottom: 2px;
+      background-color: hsl(var(--foreground));
+      transition: .2s ease;
+      border-radius: 50%;
+    }
+
+    .table-switch input:checked + .table-slider {
+      background-color: hsl(var(--primary));
+      border-color: hsl(var(--primary));
+    }
+
+    .table-switch input:checked + .table-slider::before {
+      transform: translateX(18px);
+      background-color: hsl(var(--primary-foreground));
+    }
+
     /* Status Badges */
     .status-badge {
       display: inline-flex;
@@ -1007,7 +1104,7 @@
         <div class="login-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <h2>Vidai Bot Login</h2>
+        <h2>VidAI Bot Login</h2>
         <p>Enter your administrator credentials to access the configuration dashboard.</p>
       </div>
       <form id="loginForm" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1rem;">
@@ -1029,7 +1126,7 @@
       <div class="sidebar-header">
         <div class="logo">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon-svg"><path d="m3 11 18-5v12L3 13v-2Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
-          <span class="logo-text">Vidai <span class="logo-sub">Console</span></span>
+          <span class="logo-text">VidaAI <span class="logo-sub">Console</span></span>
         </div>
         <button class="mobile-close-btn" id="mobileCloseBtn" title="Close menu">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -1407,8 +1504,25 @@
               <div class="card-content">
                 <div class="form-group">
                   <label>Active User Accounts</label>
-                  <div id="userListContainer" class="user-list">
-                    <div style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-align: center; padding: 1rem;">Loading user accounts...</div>
+                  <div class="shadcn-table-container">
+                    <table class="shadcn-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 50px; text-align: center;">No.</th>
+                          <th style="width: 110px;">User ID</th>
+                          <th>Username</th>
+                          <th style="width: 100px; text-align: center;">Status</th>
+                          <th style="width: 200px; text-align: right;">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="userListContainer">
+                        <tr>
+                          <td colspan="5" style="text-align: center; color: hsl(var(--muted-foreground)); padding: 2rem;">
+                            Loading user accounts...
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -2277,6 +2391,15 @@
       }
     }
 
+    function generateUserId(username) {
+      let hash = 0;
+      for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const code = Math.abs(hash % 9000) + 1000;
+      return `USR-${code}`;
+    }
+
     function renderUsersList(users) {
       const container = document.getElementById('userListContainer');
       if (!container) return;
@@ -2285,62 +2408,92 @@
       const currentUser = sessionStorage.getItem(USERNAME_KEY);
 
       if (users.length === 0) {
-        container.innerHTML = '<div style="color: hsl(var(--muted-foreground)); font-size: 0.875rem; text-align: center; padding: 1rem;">No administrators configured.</div>';
+        container.innerHTML = '<tr><td colspan="5" style="text-align: center; color: hsl(var(--muted-foreground)); padding: 2rem;">No administrators configured.</td></tr>';
         return;
       }
 
-      users.forEach(u => {
-        const item = document.createElement('div');
-        item.className = 'user-item';
-        
-        const userInfo = document.createElement('div');
-        userInfo.style.display = 'flex';
-        userInfo.style.alignItems = 'center';
-        userInfo.style.gap = '0.5rem';
+      users.forEach((u, index) => {
+        const row = document.createElement('tr');
 
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'user-name';
-        nameSpan.innerText = u.username;
+        // Column 1: No.
+        const noTd = document.createElement('td');
+        noTd.style.textAlign = 'center';
+        noTd.style.fontWeight = '500';
+        noTd.style.color = 'hsl(var(--muted-foreground))';
+        noTd.innerText = index + 1;
+        row.appendChild(noTd);
+
+        // Column 2: User ID
+        const idTd = document.createElement('td');
+        idTd.style.fontFamily = 'monospace';
+        idTd.style.color = 'hsl(var(--muted-foreground))';
+        idTd.innerText = generateUserId(u.username);
+        row.appendChild(idTd);
+
+        // Column 3: Username
+        const nameTd = document.createElement('td');
+        nameTd.style.fontWeight = '600';
+        nameTd.innerText = u.username;
         if (u.username.toLowerCase() === currentUser.toLowerCase()) {
-          nameSpan.innerHTML += ' <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: normal;">(You)</span>';
+          nameTd.innerHTML += ` <span class="user-status-badge active" style="margin-left: 0.5rem; font-size: 0.65rem;">You</span>`;
         }
-        userInfo.appendChild(nameSpan);
+        row.appendChild(nameTd);
 
-        const statusBadge = document.createElement('span');
-        statusBadge.className = 'user-status-badge ' + (u.isActive ? 'active' : 'inactive');
-        statusBadge.innerText = u.isActive ? 'Active' : 'Inactive';
-        userInfo.appendChild(statusBadge);
+        // Column 4: Status (Switch Toggle)
+        const statusTd = document.createElement('td');
+        statusTd.style.textAlign = 'center';
+        
+        const switchLabel = document.createElement('label');
+        switchLabel.className = 'table-switch';
+        
+        const switchInput = document.createElement('input');
+        switchInput.type = 'checkbox';
+        switchInput.checked = u.isActive !== false;
+        
+        // Disable switch if it's self or 'admin' fallback
+        const isSelfOrAdmin = u.username.toLowerCase() === 'admin' || u.username.toLowerCase() === currentUser.toLowerCase();
+        if (isSelfOrAdmin) {
+          switchInput.disabled = true;
+          switchLabel.style.opacity = '0.5';
+          switchLabel.style.cursor = 'not-allowed';
+        } else {
+          switchInput.onchange = () => handleToggleUser(u.username);
+        }
 
-        item.appendChild(userInfo);
+        const switchSlider = document.createElement('span');
+        switchSlider.className = 'table-slider';
+        
+        switchLabel.appendChild(switchInput);
+        switchLabel.appendChild(switchSlider);
+        statusTd.appendChild(switchLabel);
+        row.appendChild(statusTd);
 
+        // Column 5: Actions
+        const actionsTd = document.createElement('td');
+        actionsTd.style.textAlign = 'right';
+        
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'user-actions';
+        actionsDiv.style.justifyContent = 'flex-end';
 
-        // Actions only for other accounts (not admin fallback and not self)
-        if (u.username.toLowerCase() !== 'admin' && u.username.toLowerCase() !== currentUser.toLowerCase()) {
-          const toggleBtn = document.createElement('button');
-          toggleBtn.className = 'user-action-btn ' + (u.isActive ? 'toggle-deactivate' : 'toggle-activate');
-          if (u.isActive) {
-            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg> Suspend`;
-          } else {
-            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg> Activate`;
-          }
-          toggleBtn.onclick = () => handleToggleUser(u.username);
-          actionsDiv.appendChild(toggleBtn);
-        }
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'user-action-btn';
+        editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit`;
+        editBtn.onclick = () => startEditUser(u.username);
+        actionsDiv.appendChild(editBtn);
 
-        // Reset password button allowed for any account that is NOT the fallback 'admin',
-        // or for the logged in user themselves (even if they are the fallback 'admin'!).
+        // Reset password button
         if (u.username.toLowerCase() !== 'admin' || u.username.toLowerCase() === currentUser.toLowerCase()) {
           const resetBtn = document.createElement('button');
           resetBtn.className = 'user-action-btn';
-          resetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> Password`;
+          resetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> Reset`;
           resetBtn.onclick = () => handleResetPassword(u.username);
           actionsDiv.appendChild(resetBtn);
         }
 
-        // Delete action only for other accounts (not admin fallback and not self)
-        if (u.username.toLowerCase() !== 'admin' && u.username.toLowerCase() !== currentUser.toLowerCase()) {
+        // Delete button
+        if (!isSelfOrAdmin) {
           const deleteBtn = document.createElement('button');
           deleteBtn.className = 'user-action-btn delete-btn';
           deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg> Delete`;
@@ -2348,9 +2501,19 @@
           actionsDiv.appendChild(deleteBtn);
         }
 
-        item.appendChild(actionsDiv);
-        container.appendChild(item);
+        actionsTd.appendChild(actionsDiv);
+        row.appendChild(actionsTd);
+        
+        container.appendChild(row);
       });
+    }
+
+    function startEditUser(username) {
+      document.getElementById('targetUsername').value = username;
+      document.getElementById('targetPassword').value = '';
+      document.getElementById('targetPassword').focus();
+      document.getElementById('targetUsername').scrollIntoView({ behavior: 'smooth' });
+      showToast(`Selected administrator "${username}" for credentials update`, 'success');
     }
 
     async function handleToggleUser(targetUsername) {
