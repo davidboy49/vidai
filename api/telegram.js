@@ -611,7 +611,7 @@ export default async function handler(req, res) {
     await sendTelegramMessage(
       botToken,
       chatId,
-      `សុំបិទម៉ាភ្លែតសិន ខ្ញុំមិនអាចប្រតិបត្តិការនេះបានទេ។\n⚙️ The /${commandType} command has been disabled by the administrator.`,
+      `⚙️ The /${commandType} command has been disabled by the administrator.\n សុំសម្រាកសិន`
     );
     res.status(200).send("Command disabled.");
     return;
