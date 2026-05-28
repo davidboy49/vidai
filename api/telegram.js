@@ -121,10 +121,10 @@ function updateRateLimit(chatId) {
 }
 
 /**
- * Returns true if the user has sent too many chit-chat messages in a short window.
+ * Returns "allow", "warn", or "silent" depending on the user's chit-chat rate.
  */
 function checkUserChitChatLimit(chatId, userId, limitCount, limitWindowSeconds) {
-  if (!userId) return false;
+  if (!userId) return "allow";
   const entry = getEntry(chatId);
   if (!entry.userChitChat) {
     entry.userChitChat = {};
@@ -142,14 +142,16 @@ function checkUserChitChatLimit(chatId, userId, limitCount, limitWindowSeconds) 
     (ts) => now - ts < limitWindowMs
   );
 
-  // If they have limitCount or more messages in the last limitWindowSeconds, trigger the joke
-  if (entry.userChitChat[userId].length >= limitCountVal) {
-    return true;
-  }
-
   // Record this message
   entry.userChitChat[userId].push(now);
-  return false;
+
+  if (entry.userChitChat[userId].length > limitCountVal) {
+    return "silent";
+  }
+  if (entry.userChitChat[userId].length === limitCountVal) {
+    return "warn";
+  }
+  return "allow";
 }
 
 function isChitChatTrigger(message, text, botUsername) {
@@ -176,11 +178,15 @@ function cleanChitChatText(text, botUsername) {
   return text.replace(mentionRegex, "").trim();
 }
 
-function isUserWhitelisted(userId, allowedUserIds) {
+function isUserWhitelisted(user, allowedUserIds) {
   if (!allowedUserIds) return true; // Whitelist disabled by default
 
-  const allowedIds = allowedUserIds.split(",").map((id) => id.trim());
-  return allowedIds.includes(String(userId));
+  const allowedIds = allowedUserIds.split(",").map((id) => id.trim().toLowerCase().replace("@", ""));
+  
+  const userId = String(user?.id);
+  const username = user?.username ? String(user.username).toLowerCase() : "";
+
+  return allowedIds.includes(userId) || (username && allowedIds.includes(username));
 }
 
 function isFeatureDisabled(featureName, disabledFeatures) {
@@ -565,7 +571,7 @@ export default async function handler(req, res) {
   }
 
   // --- Whitelist check ----------------------------------------------
-  if (!isUserWhitelisted(message.from?.id, config.allowedUserIds)) {
+  if (!isUserWhitelisted(message.from, config.allowedUserIds)) {
     res.status(200).send("User not whitelisted.");
     return;
   }
@@ -588,11 +594,7 @@ export default async function handler(req, res) {
       config.restrictToAdmins
     );
     if (!isAllowed) {
-      await sendTelegramMessage(
-        botToken,
-        chatId,
-        "🔒 This bot's commands are restricted to group administrators."
-      );
+      // Fail silently to avoid group spam
       res.status(200).send("Restricted to admins.");
       return;
     }
@@ -642,14 +644,19 @@ export default async function handler(req, res) {
         }
 
         // Check if user is chatting too much (dynamic cooldown check)
-        if (
-          checkUserChitChatLimit(
-            chatId,
-            message.from?.id,
-            config.chitchatLimitCount,
-            config.chitchatLimitWindow
-          )
-        ) {
+        const chatLimitStatus = checkUserChitChatLimit(
+          chatId,
+          message.from?.id,
+          config.chitchatLimitCount,
+          config.chitchatLimitWindow
+        );
+
+        if (chatLimitStatus === "silent") {
+          res.status(200).send("Chit-chat rate limited (silenced).");
+          return;
+        }
+
+        if (chatLimitStatus === "warn") {
           await sendTelegramMessage(
             botToken,
             chatId,
@@ -657,7 +664,7 @@ export default async function handler(req, res) {
             null,
             message.message_id
           );
-          res.status(200).send("Chit-chat rate limited.");
+          res.status(200).send("Chit-chat rate limited (warned).");
           return;
         }
 

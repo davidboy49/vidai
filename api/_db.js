@@ -317,3 +317,11 @@ export async function registerChat(chatId, chatInfo) {
   }
   return false;
 }
+
+export function getStorageType() {
+  return hasKV() ? "Vercel KV" : "Local File Fallback (Stateless)";
+}
+
+export function isKVConnected() {
+  return hasKV();
+}

@@ -630,13 +630,20 @@
     <h1>Vidai Bot <span>Control Panel</span></h1>
     <div style="display: flex; align-items: center; gap: 1rem;">
       <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">☀️</button>
-      <div class="status-badge connected">Live</div>
+      <div id="dbStatusBadge" class="status-badge connected">Checking Storage...</div>
       <button class="logout-btn" onclick="handleLogout()">Lock Panel</button>
     </div>
   </header>
 
   <!-- Content -->
   <main id="mainDashboard" style="opacity: 0; display: none;">
+    <!-- Connection Warning Banner -->
+    <div id="kvWarningBanner" style="display: none; grid-column: 1 / -1; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--accent-rose); color: var(--text-primary); padding: 1.25rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; align-items: center; gap: 1rem; margin-bottom: 0.5rem; animation: fadeIn 0.4s ease;">
+      <span style="font-size: 1.75rem;">⚠️</span>
+      <div>
+        <strong>Vercel KV is not connected!</strong> Settings changed here are temporary and will reset when Vercel scales down or recycles the serverless functions. To make settings permanent, link a free <strong>Vercel KV (Upstash Redis)</strong> database to your Vercel project.
+      </div>
+    </div>
     
     <!-- Sidebar: Broadcast, Features & Permissions -->
     <div style="display: flex; flex-direction: column; gap: 2rem;">
@@ -1087,9 +1094,38 @@
         const data = await response.json();
         currentConfig = data;
         populateForm(data);
+        
+        if (data._metadata) {
+          updateDatabaseStatus(data._metadata);
+        }
       } catch (err) {
         console.error('Fetch error:', err);
         showToast('Failed to load configurations', 'error');
+      }
+    }
+
+    function updateDatabaseStatus(metadata) {
+      const badge = document.getElementById('dbStatusBadge');
+      const warningBanner = document.getElementById('kvWarningBanner');
+      
+      if (!badge) return;
+
+      if (metadata.kvConnected) {
+        badge.innerText = 'Vercel KV Connected';
+        badge.className = 'status-badge connected';
+        badge.style.background = '';
+        badge.style.borderColor = '';
+        badge.style.color = '';
+        if (warningBanner) warningBanner.style.display = 'none';
+      } else {
+        badge.innerText = '⚠️ Local storage (Temporary)';
+        badge.className = 'status-badge';
+        badge.style.background = 'rgba(239, 68, 68, 0.1)';
+        badge.style.borderColor = 'var(--accent-rose)';
+        badge.style.color = 'var(--accent-rose)';
+        if (warningBanner) {
+          warningBanner.style.display = 'flex';
+        }
       }
     }
 

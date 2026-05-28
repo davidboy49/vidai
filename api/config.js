@@ -1,4 +1,4 @@
-import { getConfig, saveConfig, verifyToken } from "./_db.js";
+import { getConfig, saveConfig, verifyToken, getStorageType, isKVConnected } from "./_db.js";
 
 async function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -47,7 +47,13 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const config = await getConfig();
-      res.status(200).json(config);
+      res.status(200).json({
+        ...config,
+        _metadata: {
+          storageType: getStorageType(),
+          kvConnected: isKVConnected()
+        }
+      });
       return;
     }
 
