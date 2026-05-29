@@ -44,7 +44,9 @@ export default async function handler(req, res) {
 
     if (req.method === "GET") {
       if (action === "sso_url") {
-        const vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
+        let vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
+        if (vportalUrl.endsWith("/")) vportalUrl = vportalUrl.slice(0, -1);
+        
         const clientId = process.env.VPORTAL_CLIENT_ID || "vidai-console";
         const requestedRedirectUri = req.query.redirect_uri || `${vportalUrl}/api/auth?action=callback`;
         
@@ -70,7 +72,9 @@ export default async function handler(req, res) {
           return;
         }
 
-        const vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
+        let vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
+        if (vportalUrl.endsWith("/")) vportalUrl = vportalUrl.slice(0, -1);
+        
         const clientId = process.env.VPORTAL_CLIENT_ID || "vidai-console";
         const clientSecret = process.env.VPORTAL_CLIENT_SECRET || "vidai-secret-key-xyz";
         
