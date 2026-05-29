@@ -110,7 +110,8 @@ export default async function handler(req, res) {
         });
 
         if (!userinfoRes.ok) {
-          res.setHeader("Location", `/?error=${encodeURIComponent("Failed to fetch user profile")}`);
+          const errText = await userinfoRes.text();
+          res.setHeader("Location", `/?error=${encodeURIComponent("Failed to fetch user profile: " + errText)}`);
           res.status(302).end();
           return;
         }
