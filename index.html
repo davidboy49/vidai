@@ -1338,6 +1338,15 @@
           <input type="password" id="adminPasswordInput" class="form-control" placeholder="Password" required>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.25rem;">Unlock Dashboard</button>
+        <div class="sso-divider" style="display: flex; align-items: center; text-align: center; margin: 0.5rem 0; color: hsl(var(--muted-foreground)); font-size: 0.75rem;">
+          <hr style="flex: 1; border: none; border-top: 1px solid hsl(var(--border)); margin-right: 0.5rem;">
+          <span>or</span>
+          <hr style="flex: 1; border: none; border-top: 1px solid hsl(var(--border)); margin-left: 0.5rem;">
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="handleVPortalSSO()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+          Sign in with VPortal
+        </button>
       </form>
     </div>
   </div>
@@ -1946,6 +1955,30 @@
 
     // Run on page load
     window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryToken = urlParams.get('token');
+      const queryUser = urlParams.get('username');
+      const queryError = urlParams.get('error');
+      
+      if (queryError) {
+        showToast(decodeURIComponent(queryError), 'error');
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
+      if (queryToken && queryUser) {
+        sessionStorage.setItem(USERNAME_KEY, queryUser);
+        sessionStorage.setItem(TOKEN_KEY, queryToken);
+        const sidebarUser = document.getElementById('sidebarUserName');
+        if (sidebarUser) sidebarUser.innerText = queryUser;
+        showToast('Access Unlocked via VPortal SSO', 'success');
+        showDashboard();
+        fetchConfigData();
+        fetchChatsData();
+        fetchUsersData();
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+
       const storedUser = sessionStorage.getItem(USERNAME_KEY);
       const storedToken = sessionStorage.getItem(TOKEN_KEY);
       if (storedUser && storedToken) {
@@ -1954,6 +1987,22 @@
         showLogin();
       }
     };
+
+    async function handleVPortalSSO() {
+      try {
+        const redirectUri = window.location.origin + '/api/auth?action=callback';
+        const response = await fetch(`/api/auth?action=sso_url&redirect_uri=${encodeURIComponent(redirectUri)}`);
+        if (response.ok) {
+          const data = await response.json();
+          window.location.href = data.url;
+        } else {
+          showToast('Failed to get SSO configuration', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('SSO connection failed', 'error');
+      }
+    }
 
     function showLogin() {
       document.getElementById('loginOverlay').classList.add('active');
