@@ -327,7 +327,7 @@ async function callLLM(text, aiConfig, commandType, systemPrompts) {
       { role: "system", content: getSystemPrompt(commandType, systemPrompts) },
       { role: "user", content: text },
     ],
-    max_tokens: 200,
+    max_tokens: 1000,
     temperature: commandType === "roast" ? 0.8 : 0.3,
   });
 
