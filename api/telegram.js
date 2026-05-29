@@ -257,8 +257,8 @@ async function checkAdminRestriction(botToken, chat, user, restrictToAdmins) {
   if (!restrictToAdmins) {
     return true; // Not restricted
   }
-  if (chat?.type === "private") {
-    return true; // DMs have no admins, always allow
+  if (chat?.type === "private" || chat?.type === "channel") {
+    return true; // DMs and channels have no standard user message triggers to check admin, always allow
   }
   if (!user?.id) {
     return false;
@@ -584,7 +584,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const message = update?.message;
+  const message = update?.message || update?.channel_post;
   if (!message?.chat?.id) {
     res.status(200).send("No message to process.");
     return;
@@ -606,7 +606,7 @@ export default async function handler(req, res) {
   }
 
   // --- Whitelist check ----------------------------------------------
-  if (!isUserWhitelisted(message.from, config.allowedUserIds)) {
+  if (message.chat?.type !== "channel" && !isUserWhitelisted(message.from, config.allowedUserIds)) {
     res.status(200).send("User not whitelisted.");
     return;
   }
@@ -646,7 +646,7 @@ export default async function handler(req, res) {
       const senderName =
         message.from?.first_name ||
         message.from?.username ||
-        "Unknown";
+        (message.chat?.type === "channel" ? "Channel" : "Unknown");
       
       const cleanText = cleanChitChatText(text, botUsername);
       await addMessageToCache(chatId, senderName, cleanText, message.date);
@@ -770,15 +770,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  // --- All remaining commands require HF_TOKEN ----------------------
-  if (!hfToken) {
-    console.error("Missing HF_TOKEN.");
+  // --- All remaining commands require API key ----------------------
+  if (!aiConfig.apiKey) {
+    console.error("Missing AI API Key.");
     await sendTelegramMessage(
       botToken,
       chatId,
-      "⚙️ HF_TOKEN is not configured — I can't process commands right now.",
+      "⚙️ AI API key is not configured — I can't process commands right now.",
     );
-    res.status(200).send("Missing HF_TOKEN.");
+    res.status(200).send("Missing AI API Key.");
     return;
   }
 
@@ -801,7 +801,7 @@ export default async function handler(req, res) {
 
     // ---- /quote ----------------------------------------------------
     if (commandType === "quote") {
-      const { quote, tradition } = await generateQuote(hfToken, chatId, config.systemPrompts, config.hfModel);
+      const { quote, tradition } = await generateQuote(aiConfig, chatId, config.systemPrompts);
       const formatted = formatResponse("quote", quote, tradition);
       await sendTelegramMessage(botToken, chatId, formatted, "HTML");
 
@@ -853,7 +853,7 @@ export default async function handler(req, res) {
         `Full chat context:\n${truncated}`;
     }
 
-    const result = await callLLM(prompt, hfToken, commandType, config.systemPrompts, config.hfModel);
+    const result = await callLLM(prompt, aiConfig, commandType, config.systemPrompts);
     const responseText = formatResponse(commandType, result);
     await sendTelegramMessage(botToken, chatId, responseText, "HTML");
 

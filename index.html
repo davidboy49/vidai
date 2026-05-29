@@ -2648,7 +2648,7 @@
           <div class="chat-inbox-item-info">
             <div class="chat-inbox-item-name">${escapeHtml(chat.title || 'Chat')}</div>
             <div class="chat-inbox-item-meta">
-              <span>${isPrivate ? 'Private DM' : 'Group Chat'}</span>
+              <span>${chat.type === 'private' ? 'Private DM' : (chat.type === 'channel' ? 'Channel' : 'Group Chat')}</span>
               <span>${dateStr}</span>
             </div>
           </div>

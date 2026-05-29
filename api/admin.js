@@ -64,6 +64,8 @@ export default async function handler(req, res) {
         }));
         res.status(200).json(sanitized);
         return;
+      }
+
       if (action === "chat-history") {
         const chatId = req.query.chatId;
         if (!chatId) {
