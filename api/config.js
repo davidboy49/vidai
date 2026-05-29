@@ -51,7 +51,8 @@ export default async function handler(req, res) {
         ...config,
         _metadata: {
           storageType: getStorageType(),
-          kvConnected: isKVConnected()
+          kvConnected: isKVConnected(),
+          botUsername: process.env.TELEGRAM_BOT_USERNAME || "Vidai"
         }
       });
       return;

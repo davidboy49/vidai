@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { getConfig, registerChat } from "./_db.js";
+import { getConfig, registerChat, getChatHistory, saveChatHistory } from "./_db.js";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                         */
@@ -97,16 +97,24 @@ function getEntry(chatId) {
  * Store a message with sender attribution and timestamp so the LLM can
  * produce richer, context-aware summaries (e.g. "Alice discussed X").
  */
-function addMessageToCache(chatId, from, text, timestamp) {
+async function addMessageToCache(chatId, from, text, timestamp) {
   const entry = getEntry(chatId);
+  if (entry.messages.length === 0) {
+    entry.messages = await getChatHistory(chatId);
+  }
   entry.messages.push({ from, text, timestamp });
   if (entry.messages.length > MAX_MESSAGES) {
     entry.messages = entry.messages.slice(-MAX_MESSAGES);
   }
+  await saveChatHistory(chatId, entry.messages);
 }
 
-function getMessagesForChat(chatId) {
-  return getEntry(chatId).messages;
+async function getMessagesForChat(chatId) {
+  const entry = getEntry(chatId);
+  if (entry.messages.length === 0) {
+    entry.messages = await getChatHistory(chatId);
+  }
+  return entry.messages;
 }
 
 /* ------------------------------------------------------------------ */
@@ -641,7 +649,7 @@ export default async function handler(req, res) {
         "Unknown";
       
       const cleanText = cleanChitChatText(text, botUsername);
-      addMessageToCache(chatId, senderName, cleanText, message.date);
+      await addMessageToCache(chatId, senderName, cleanText, message.date);
 
       if (isChitChatTrigger(message, text, botUsername)) {
         // Check if chit-chat feature is disabled
@@ -710,7 +718,7 @@ export default async function handler(req, res) {
         try {
           await sendTypingAction(botToken, chatId);
 
-          const cachedMessages = getMessagesForChat(chatId);
+          const cachedMessages = await getMessagesForChat(chatId);
           const combined = cachedMessages
             .map((m) => `[${m.from}]: ${m.text}`)
             .join("\n");
@@ -734,7 +742,7 @@ export default async function handler(req, res) {
 
           // Cache the bot's response to maintain conversation history
           const botName = botUsername || "Vidai";
-          addMessageToCache(chatId, botName, result, Math.floor(Date.now() / 1000));
+          await addMessageToCache(chatId, botName, result, Math.floor(Date.now() / 1000));
         } catch (error) {
           console.error("Failed to process chit-chat.", error);
           await sendTelegramMessage(
@@ -812,7 +820,7 @@ export default async function handler(req, res) {
     }
 
     // ---- Commands that need cached messages -------------------------
-    const cachedMessages = getMessagesForChat(chatId);
+    const cachedMessages = await getMessagesForChat(chatId);
 
     if (cachedMessages.length === 0) {
       const emptyMessages = {

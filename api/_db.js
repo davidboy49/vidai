@@ -329,3 +329,66 @@ export function getStorageType() {
 export function isKVConnected() {
   return hasKV();
 }
+
+export async function getChatHistory(chatId) {
+  const key = `vidai_history_${chatId}`;
+  if (hasKV()) {
+    try {
+      const response = await fetch(process.env.KV_REST_API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(["GET", key])
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.result) {
+          return JSON.parse(data.result);
+        }
+      }
+    } catch (err) {
+      console.error(`Error reading history for ${chatId} from Vercel KV:`, err);
+    }
+  }
+
+  try {
+    const localHistoryPath = path.join(process.cwd(), `history_${chatId}.json`);
+    if (fs.existsSync(localHistoryPath)) {
+      const content = fs.readFileSync(localHistoryPath, "utf8");
+      return JSON.parse(content);
+    }
+  } catch (err) {
+    console.error(`Error reading local history for ${chatId}:`, err);
+  }
+  return [];
+}
+
+export async function saveChatHistory(chatId, messages) {
+  const key = `vidai_history_${chatId}`;
+  if (hasKV()) {
+    try {
+      const response = await fetch(process.env.KV_REST_API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(["SET", key, JSON.stringify(messages)])
+      });
+      if (response.ok) return true;
+    } catch (err) {
+      console.error(`Error saving history for ${chatId} to Vercel KV:`, err);
+    }
+  }
+
+  try {
+    const localHistoryPath = path.join(process.cwd(), `history_${chatId}.json`);
+    fs.writeFileSync(localHistoryPath, JSON.stringify(messages, null, 2), "utf8");
+    return true;
+  } catch (err) {
+    console.error(`Error saving local history for ${chatId}:`, err);
+  }
+  return false;
+}

@@ -1,4 +1,4 @@
-import { verifyToken, getChats, getUsers, saveUsers, hashPassword, generateToken } from "./_db.js";
+import { verifyToken, getChats, getUsers, saveUsers, hashPassword, generateToken, getChatHistory } from "./_db.js";
 
 async function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -63,6 +63,15 @@ export default async function handler(req, res) {
           isActive: u.isActive !== false
         }));
         res.status(200).json(sanitized);
+        return;
+      if (action === "chat-history") {
+        const chatId = req.query.chatId;
+        if (!chatId) {
+          res.status(400).json({ error: "chatId is required." });
+          return;
+        }
+        const history = await getChatHistory(chatId);
+        res.status(200).json(history);
         return;
       }
     }
