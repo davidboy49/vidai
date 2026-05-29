@@ -111,7 +111,7 @@ export default async function handler(req, res) {
 
         if (!userinfoRes.ok) {
           const errText = await userinfoRes.text();
-          res.setHeader("Location", `/?error=${encodeURIComponent("Failed to fetch user profile: " + errText)}`);
+          res.setHeader("Location", `/?error=${encodeURIComponent("Failed to fetch user profile: " + errText + " | TokenData: " + JSON.stringify(tokenData))}`);
           res.status(302).end();
           return;
         }
