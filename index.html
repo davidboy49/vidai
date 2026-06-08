@@ -1343,9 +1343,9 @@
           <span>or</span>
           <hr style="flex: 1; border: none; border-top: 1px solid hsl(var(--border)); margin-left: 0.5rem;">
         </div>
-        <button type="button" class="btn btn-secondary" onclick="handleVPortalSSO()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
-          Sign in with VPortal SSO
+        <button type="button" class="btn btn-secondary" onclick="handleKeycloakSSO()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          Sign in with Keycloak SSO
         </button>
       </form>
     </div>
@@ -1970,7 +1970,7 @@
         sessionStorage.setItem(TOKEN_KEY, queryToken);
         const sidebarUser = document.getElementById('sidebarUserName');
         if (sidebarUser) sidebarUser.innerText = queryUser;
-        showToast('Access Unlocked via VPortal SSO', 'success');
+        showToast('Access Unlocked via Keycloak SSO', 'success');
         showDashboard();
         fetchConfigData();
         fetchChatsData();
@@ -1986,14 +1986,14 @@
       } else {
         const noAuto = urlParams.get('no_auto') === 'true' || sessionStorage.getItem('logged_out') === 'true';
         if (!queryError && !noAuto) {
-          handleVPortalSSO();
+          handleKeycloakSSO();
         } else {
           showLogin();
         }
       }
     };
 
-    async function handleVPortalSSO() {
+    async function handleKeycloakSSO() {
       try {
         const redirectUri = window.location.origin + '/api/auth?action=callback';
         const response = await fetch(`/api/auth?action=sso_url&redirect_uri=${encodeURIComponent(redirectUri)}`);
@@ -2001,11 +2001,11 @@
           const data = await response.json();
           window.location.href = data.url;
         } else {
-          showToast('Failed to get SSO configuration', 'error');
+          showToast('Failed to get Keycloak configuration', 'error');
         }
       } catch (err) {
         console.error(err);
-        showToast('SSO connection failed', 'error');
+        showToast('Keycloak connection failed', 'error');
       }
     }
 

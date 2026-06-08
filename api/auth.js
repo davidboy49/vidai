@@ -44,17 +44,15 @@ export default async function handler(req, res) {
 
     if (req.method === "GET") {
       if (action === "sso_url") {
-        let vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
-        if (vportalUrl.startsWith("VPORTAL_URL=")) {
-          vportalUrl = vportalUrl.replace("VPORTAL_URL=", "");
-        }
-        if (vportalUrl.endsWith("/")) vportalUrl = vportalUrl.slice(0, -1);
+        let issuer = process.env.KEYCLOAK_ISSUER || "https://sso.fearlessonline.shop/realms/VPortal";
+        if (issuer.endsWith("/")) issuer = issuer.slice(0, -1);
         
-        const clientId = process.env.VPORTAL_CLIENT_ID || "vidai-console";
-        const requestedRedirectUri = req.query.redirect_uri || `${vportalUrl}/api/auth?action=callback`;
+        const clientId = process.env.KEYCLOAK_CLIENT_ID || "vidai-console";
+        const protocol = req.headers["x-forwarded-proto"] || "http";
+        const requestedRedirectUri = req.query.redirect_uri || `${protocol}://${req.headers.host}/api/auth?action=callback`;
         
         const state = crypto.randomBytes(16).toString("hex");
-        const ssoUrl = `${vportalUrl}/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(requestedRedirectUri)}&state=${state}&scope=profile%20email`;
+        const ssoUrl = `${issuer}/protocol/openid-connect/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(requestedRedirectUri)}&state=${state}&scope=openid%20profile%20email`;
         
         res.status(200).json({ url: ssoUrl });
         return;
@@ -75,36 +73,33 @@ export default async function handler(req, res) {
           return;
         }
 
-        let vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
-        if (vportalUrl.startsWith("VPORTAL_URL=")) {
-          vportalUrl = vportalUrl.replace("VPORTAL_URL=", "");
-        }
-        if (vportalUrl.endsWith("/")) vportalUrl = vportalUrl.slice(0, -1);
+        let issuer = process.env.KEYCLOAK_ISSUER || "https://sso.fearlessonline.shop/realms/VPortal";
+        if (issuer.endsWith("/")) issuer = issuer.slice(0, -1);
         
-        const clientId = process.env.VPORTAL_CLIENT_ID || "vidai-console";
-        const clientSecret = process.env.VPORTAL_CLIENT_SECRET || "vidai-secret-key-xyz";
+        const clientId = process.env.KEYCLOAK_CLIENT_ID || "vidai-console";
+        const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET || "vidai-secret-key-xyz";
         
         const protocol = req.headers["x-forwarded-proto"] || "http";
         const redirectUri = `${protocol}://${req.headers.host}/api/auth?action=callback`;
 
         // 1. Exchange authorization code for token
-        const tokenRes = await fetch(`${vportalUrl}/api/oauth/token`, {
+        const tokenRes = await fetch(`${issuer}/protocol/openid-connect/token`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/x-www-form-urlencoded"
           },
-          body: JSON.stringify({
+          body: new URLSearchParams({
             grant_type: "authorization_code",
             code,
             redirect_uri: redirectUri,
             client_id: clientId,
             client_secret: clientSecret
-          })
+          }).toString()
         });
 
         if (!tokenRes.ok) {
-          const errData = await tokenRes.json();
-          res.setHeader("Location", `/?error=${encodeURIComponent(errData.error_description || "Token exchange failed")}`);
+          const errData = await tokenRes.text();
+          res.setHeader("Location", `/?error=${encodeURIComponent("Token exchange failed: " + errData)}`);
           res.status(302).end();
           return;
         }
@@ -113,7 +108,7 @@ export default async function handler(req, res) {
         const accessToken = tokenData.access_token;
 
         // 2. Fetch User Profile using access token
-        const userinfoRes = await fetch(`${vportalUrl}/api/oauth/userinfo`, {
+        const userinfoRes = await fetch(`${issuer}/protocol/openid-connect/userinfo`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
@@ -121,7 +116,7 @@ export default async function handler(req, res) {
 
         if (!userinfoRes.ok) {
           const errText = await userinfoRes.text();
-          res.setHeader("Location", `/?error=${encodeURIComponent("Failed to fetch user profile: " + errText + " | TokenData: " + JSON.stringify(tokenData))}`);
+          res.setHeader("Location", `/?error=${encodeURIComponent("Failed to fetch user profile: " + errText)}`);
           res.status(302).end();
           return;
         }
@@ -130,7 +125,7 @@ export default async function handler(req, res) {
         
         // 3. Auto-provision user if they do not exist
         const users = await getUsers();
-        const username = userInfo.name || userInfo.email.split("@")[0] || "sso_user";
+        const username = userInfo.preferred_username || userInfo.name || (userInfo.email && userInfo.email.split("@")[0]) || "keycloak_user";
 
         let matchedUser = users.find(
           (u) => u.username.toLowerCase() === username.toLowerCase()
