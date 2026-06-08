@@ -1345,7 +1345,7 @@
         </div>
         <button type="button" class="btn btn-secondary" onclick="handleVPortalSSO()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
-          Sign in with VPortal
+          Sign in with VPortal SSO
         </button>
       </form>
     </div>
@@ -1984,7 +1984,12 @@
       if (storedUser && storedToken) {
         verifySession(storedUser, storedToken);
       } else {
-        showLogin();
+        const noAuto = urlParams.get('no_auto') === 'true' || sessionStorage.getItem('logged_out') === 'true';
+        if (!queryError && !noAuto) {
+          handleVPortalSSO();
+        } else {
+          showLogin();
+        }
       }
     };
 
@@ -2091,6 +2096,7 @@
 
     function handleLogout() {
       sessionStorage.clear();
+      sessionStorage.setItem('logged_out', 'true');
       document.getElementById('adminUsernameInput').value = '';
       document.getElementById('adminPasswordInput').value = '';
       showLogin();

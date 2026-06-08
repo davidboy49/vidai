@@ -45,6 +45,9 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       if (action === "sso_url") {
         let vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
+        if (vportalUrl.startsWith("VPORTAL_URL=")) {
+          vportalUrl = vportalUrl.replace("VPORTAL_URL=", "");
+        }
         if (vportalUrl.endsWith("/")) vportalUrl = vportalUrl.slice(0, -1);
         
         const clientId = process.env.VPORTAL_CLIENT_ID || "vidai-console";
@@ -73,6 +76,9 @@ export default async function handler(req, res) {
         }
 
         let vportalUrl = process.env.VPORTAL_URL || "http://localhost:3000";
+        if (vportalUrl.startsWith("VPORTAL_URL=")) {
+          vportalUrl = vportalUrl.replace("VPORTAL_URL=", "");
+        }
         if (vportalUrl.endsWith("/")) vportalUrl = vportalUrl.slice(0, -1);
         
         const clientId = process.env.VPORTAL_CLIENT_ID || "vidai-console";
