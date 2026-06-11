@@ -47,8 +47,19 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const config = await getConfig();
+      
+      // Mask API keys in profiles before sending to the client
+      const maskedProfiles = (config.profiles || []).map(p => {
+        const masked = { ...p };
+        if (masked.apiKey) {
+          masked.apiKey = "******";
+        }
+        return masked;
+      });
+
       res.status(200).json({
         ...config,
+        profiles: maskedProfiles,
         _metadata: {
           storageType: getStorageType(),
           kvConnected: isKVConnected(),
@@ -63,6 +74,22 @@ export default async function handler(req, res) {
       if (!body) {
         res.status(400).json({ error: "Invalid payload: empty body" });
         return;
+      }
+
+      // Restore original API keys if they were masked
+      const currentConfig = await getConfig();
+      const currentProfiles = currentConfig.profiles || [];
+      if (body.profiles && Array.isArray(body.profiles)) {
+        body.profiles = body.profiles.map(p => {
+          if (p.apiKey === "******") {
+            const existing = currentProfiles.find(ep => ep.id === p.id);
+            return {
+              ...p,
+              apiKey: existing ? existing.apiKey : ""
+            };
+          }
+          return p;
+        });
       }
 
       await saveConfig(body);

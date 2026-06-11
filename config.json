@@ -6,6 +6,17 @@
   "commandCooldown": 5,
   "chitchatLimitCount": 5,
   "chitchatLimitWindow": 120,
+  "profiles": [
+    {
+      "id": "test-profile-123",
+      "name": "Gemini Test Profile",
+      "provider": "gemini",
+      "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai/",
+      "model": "gemini-2.5-flash",
+      "apiKey": "my-super-secret-gemini-key-123"
+    }
+  ],
+  "activeProfileId": "test-profile-123",
   "systemPrompts": {
     "activity": "Look at the last 3 messages and provide one-line activity highlights.",
     "summary": "Look at the last 3 messages and provide a one-line TL;DR summary.",
