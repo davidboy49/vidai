@@ -72,11 +72,12 @@ export async function verifyToken(username, token) {
   const users = await getUsers();
   let passwordHash = null;
 
-  const matchedUser = users.find(u => u.username === username);
+  const adminUsername = process.env.ADMIN_USERNAME || "admin";
+  const matchedUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
   if (matchedUser) {
     if (matchedUser.isActive === false) return false; // Account de-activated
     passwordHash = matchedUser.passwordHash;
-  } else if (username === "admin") {
+  } else if (username.toLowerCase() === adminUsername.toLowerCase()) {
     // Out-of-the-box default admin fallback
     passwordHash = hashPassword(process.env.ADMIN_PASSWORD || "admin_password");
   }
@@ -215,8 +216,9 @@ export async function getUsers() {
   }
 
   // Seed with default admin if file doesn't exist
+  const adminUsername = process.env.ADMIN_USERNAME || "admin";
   return [{
-    username: "admin",
+    username: adminUsername,
     passwordHash: hashPassword(process.env.ADMIN_PASSWORD || "admin_password"),
     isActive: true
   }];
