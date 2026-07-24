@@ -78,7 +78,7 @@ export async function verifyToken(username, token) {
     passwordHash = matchedUser.passwordHash;
   } else if (username === "admin") {
     // Out-of-the-box default admin fallback
-    passwordHash = hashPassword(process.env.ADMIN_PASSWORD || "admin");
+    passwordHash = hashPassword(process.env.ADMIN_PASSWORD || "admin_password");
   }
 
   if (!passwordHash) return false;
@@ -217,7 +217,7 @@ export async function getUsers() {
   // Seed with default admin if file doesn't exist
   return [{
     username: "admin",
-    passwordHash: hashPassword(process.env.ADMIN_PASSWORD || "admin"),
+    passwordHash: hashPassword(process.env.ADMIN_PASSWORD || "admin_password"),
     isActive: true
   }];
 }
