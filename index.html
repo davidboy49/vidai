@@ -1338,15 +1338,6 @@
           <input type="password" id="adminPasswordInput" class="form-control" placeholder="Password" required>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.25rem;">Unlock Dashboard</button>
-        <div class="sso-divider" style="display: flex; align-items: center; text-align: center; margin: 0.5rem 0; color: hsl(var(--muted-foreground)); font-size: 0.75rem;">
-          <hr style="flex: 1; border: none; border-top: 1px solid hsl(var(--border)); margin-right: 0.5rem;">
-          <span>or</span>
-          <hr style="flex: 1; border: none; border-top: 1px solid hsl(var(--border)); margin-left: 0.5rem;">
-        </div>
-        <button type="button" class="btn btn-secondary" onclick="handleKeycloakSSO()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-          Sign in with Keycloak SSO
-        </button>
       </form>
     </div>
   </div>
@@ -1984,12 +1975,7 @@
       if (storedUser && storedToken) {
         verifySession(storedUser, storedToken);
       } else {
-        const noAuto = urlParams.get('no_auto') === 'true' || sessionStorage.getItem('logged_out') === 'true';
-        if (!queryError && !noAuto) {
-          handleKeycloakSSO();
-        } else {
-          showLogin();
-        }
+        showLogin();
       }
     };
 
