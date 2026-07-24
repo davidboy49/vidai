@@ -1313,6 +1313,12 @@
         display: inline-flex;
       }
     }
+
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
   </style>
 </head>
 <body>
@@ -1870,11 +1876,14 @@
                   </div>
 
                   <div class="chat-conversation-footer">
-                    <form onsubmit="sendChatDirectReply(event)" class="chat-reply-input-group">
-                      <input type="text" id="chatReplyInput" class="form-control" placeholder="Type a direct response as the bot..." required autocomplete="off">
+                    <form onsubmit="sendChatDirectReply(event)" class="chat-reply-input-group" style="display: flex; gap: 0.5rem; width: 100%;">
+                      <input type="text" id="chatReplyInput" class="form-control" placeholder="Type a direct response as the bot..." required autocomplete="off" style="flex: 1;">
                       <button type="submit" id="chatReplySendBtn" class="btn btn-primary" style="padding: 0 1.25rem;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                         <span style="font-size: 0.8rem; margin-left: 0.25rem; font-weight: 600;">Reply</span>
+                      </button>
+                      <button type="button" id="voiceRecordBtn" class="btn btn-secondary" onclick="toggleVoiceRecording()" style="padding: 0 0.85rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative;" title="Record Voice Message">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
                       </button>
                     </form>
                   </div>
@@ -2874,6 +2883,110 @@
       if (!activeChatId) return;
       await fetchChatHistory(activeChatId);
       showToast('Logs synchronized.', 'success');
+    }
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+
+    async function toggleVoiceRecording() {
+      const recordBtn = document.getElementById('voiceRecordBtn');
+      if (isRecording) {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        return;
+      }
+
+      audioChunks = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstart = () => {
+          isRecording = true;
+          recordBtn.classList.remove('btn-secondary');
+          recordBtn.classList.add('btn-danger');
+          recordBtn.style.animation = 'pulse 1s infinite alternate';
+          showToast('Recording... click mic again to send.', 'info');
+        };
+
+        mediaRecorder.onstop = async () => {
+          isRecording = false;
+          recordBtn.classList.remove('btn-danger');
+          recordBtn.classList.add('btn-secondary');
+          recordBtn.style.animation = '';
+          
+          stream.getTracks().forEach(track => track.stop());
+
+          if (audioChunks.length === 0) {
+            showToast('No audio recorded.', 'error');
+            return;
+          }
+
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          if (audioBlob.size < 500) {
+            showToast('Audio recording was too short.', 'error');
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = async () => {
+            const base64Data = reader.result;
+            await sendVoiceMessage(base64Data);
+          };
+        };
+
+        mediaRecorder.start();
+      } catch (err) {
+        console.error('Failed to access microphone', err);
+        showToast('Microphone access denied or unavailable.', 'error');
+      }
+    }
+
+    async function sendVoiceMessage(base64Voice) {
+      if (!activeChatId) return;
+
+      const recordBtn = document.getElementById('voiceRecordBtn');
+      recordBtn.disabled = true;
+      const originalHtml = recordBtn.innerHTML;
+      recordBtn.innerHTML = '<span style="font-size:0.75rem;">📤</span>';
+
+      const user = sessionStorage.getItem(USERNAME_KEY);
+      const token = sessionStorage.getItem(TOKEN_KEY);
+
+      try {
+        const response = await fetch('/api/admin?action=send-voice', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-User': user,
+            'X-Admin-Token': token
+          },
+          body: JSON.stringify({ chatId: activeChatId, voice: base64Voice })
+        });
+
+        if (response.ok) {
+          showToast('Voice message sent successfully!', 'success');
+          await fetchChatHistory(activeChatId);
+        } else {
+          const data = await response.json();
+          showToast(data.error || 'Failed to send voice message.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Network error sending voice message.', 'error');
+      } finally {
+        recordBtn.disabled = false;
+        recordBtn.innerHTML = originalHtml;
+      }
     }
 
     // Toggle manual Chat ID field visibility on selection change

@@ -23,6 +23,12 @@
     "quote": "Generate one short quote from the requested tradition (Greek, Chinese, or Stoic) and include the author. Prefer real, well-known quotes when possible. Format exactly as: \"<quote>\" — <author>.",
     "mood": "Analyze the emotional tone of these messages. Respond with a single emoji representing the overall mood, followed by a one-line description. Keep it short and fun.",
     "roast": "Give a short, playful, lighthearted roast of the chat activity. Be funny but not mean-spirited. Keep it under 3 sentences.",
-    "chitchat": "You are Vidai, a professional, objective, and polite AI assistant in a Telegram group chat. Provide clear, direct, and concise responses (1 to 3 sentences max). Maintain a helpful yet formal tone. Avoid overly casual language, excessive emoji, or conversational filler."
+    "chitchat": "You are Vidai, a professional, objective, and polite AI assistant in a Telegram group chat. Provide clear, direct, and concise responses (1 to 3 sentences max). Maintain a helpful yet formal tone. Avoid overly casual language, excessive emoji, or conversational filler.",
+    "drama": "Look at the last 15-20 messages and narrate the chat history as a high-stakes, over-the-top, dramatic Spanish telenovela/soap opera script. Use names, dramatic pauses, gasps, and emotional tension. Keep it under 5-6 sentences, dramatic and funny.",
+    "conspiracy": "Combine the last 20 messages to find 'hidden connections' and output a wild, satirical conspiracy theory about what the group members are *actually* planning. Keep it entertaining, funny, and under 5 sentences.",
+    "fight": "Generate a text-based, turn-by-turn RPG mini-battle between the sender and another member mentioned or a random member in the chat log. Use their message histories as stats, special moves, and dialogue. Keep it short, humorous, and under 6 sentences.",
+    "hr": "Review the last 20 messages and write a mock corporate Human Resources performance evaluation or memo regarding the workplace behavior of the group chat. Keep it passive-aggressive, corporate, and funny, under 5 sentences.",
+    "fortune": "Draw three random, humorous tarot cards (like 'The Deactivated Keycloak', 'The Merge Conflict', 'The Silent Bot') based on the recent message sentiment, and give a funny/cryptic prediction. Keep it under 5 sentences.",
+    "future": "Analyze the recent chat history as an archaeologist/historian from the year 3026. Treat typos, tech jargon, or general messages as deep religious rituals or sacred scrolls. Keep it funny, brief, under 5 sentences."
   }
 }

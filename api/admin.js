@@ -115,6 +115,47 @@ export default async function handler(req, res) {
         return;
       }
 
+      // Send voice message
+      if (action === "send-voice") {
+        if (!body || !body.chatId || !body.voice) {
+          res.status(400).json({ error: "chatId and voice data are required." });
+          return;
+        }
+
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        if (!botToken) {
+          res.status(500).json({ error: "Bot token is not configured on the server." });
+          return;
+        }
+
+        const { chatId, voice } = body;
+        const base64Data = voice.includes("base64,") ? voice.split("base64,")[1] : voice;
+        const buffer = Buffer.from(base64Data, "base64");
+
+        const formData = new FormData();
+        formData.append("chat_id", chatId);
+        
+        const blob = new Blob([buffer], { type: "audio/ogg" });
+        formData.append("voice", blob, "voice.ogg");
+
+        const telegramResponse = await fetch(
+          `https://api.telegram.org/bot${botToken}/sendVoice`,
+          {
+            method: "POST",
+            body: formData
+          }
+        );
+
+        if (telegramResponse.ok) {
+          res.status(200).json({ success: true, message: "Voice message sent successfully." });
+          return;
+        }
+
+        const errorText = await telegramResponse.text();
+        res.status(400).json({ error: `Telegram returned error: ${errorText}` });
+        return;
+      }
+
       // 2. Create or Update user account
       if (action === "save-user") {
         if (!body || !body.targetUsername || !body.targetPassword) {

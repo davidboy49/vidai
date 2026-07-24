@@ -308,6 +308,24 @@ function getSystemPrompt(commandType, systemPrompts) {
         "Maintain a helpful yet formal tone. Avoid overly casual language, excessive emoji, or conversational filler."
       );
 
+    case "drama":
+      return "Look at the last 15-20 messages and narrate the chat history as a high-stakes, over-the-top, dramatic Spanish telenovela/soap opera script. Use names, dramatic pauses, gasps, and emotional tension. Keep it under 5-6 sentences, dramatic and funny.";
+
+    case "conspiracy":
+      return "Combine the last 20 messages to find 'hidden connections' and output a wild, satirical conspiracy theory about what the group members are *actually* planning. Keep it entertaining, funny, and under 5 sentences.";
+
+    case "fight":
+      return "Generate a text-based, turn-by-turn RPG mini-battle between the sender and another member mentioned or a random member in the chat log. Use their message histories as stats, special moves, and dialogue. Keep it short, humorous, and under 6 sentences.";
+
+    case "hr":
+      return "Review the last 20 messages and write a mock corporate Human Resources performance evaluation or memo regarding the workplace behavior of the group chat. Keep it passive-aggressive, corporate, and funny, under 5 sentences.";
+
+    case "fortune":
+      return "Draw three random, humorous tarot cards (like 'The Deactivated Keycloak', 'The Merge Conflict', 'The Silent Bot') based on the recent message sentiment, and give a funny/cryptic prediction. Keep it under 5 sentences.";
+
+    case "future":
+      return "Analyze the recent chat history as an archaeologist/historian from the year 3026. Treat typos, tech jargon, or general messages as deep religious rituals or sacred scrolls. Keep it funny, brief, under 5 sentences.";
+
     default:
       return "Respond briefly and clearly.";
   }
@@ -376,7 +394,7 @@ async function generateQuote(aiConfig, chatId, systemPrompts) {
 /*  Command parsing                                                   */
 /* ------------------------------------------------------------------ */
 
-const COMMANDS = ["summary", "activity", "quote", "help", "start", "mood", "roast"];
+const COMMANDS = ["summary", "activity", "quote", "help", "start", "mood", "roast", "drama", "conspiracy", "fight", "hr", "fortune", "future"];
 
 function getCommandType(text, botUsername) {
   const suffix = botUsername
@@ -494,6 +512,18 @@ function formatResponse(commandType, text, tradition) {
       return `🎭 <b>Group Mood</b>\n\n${escaped}`;
     case "roast":
       return `🔥 <b>Chat Roast</b>\n\n${escaped}`;
+    case "drama":
+      return `🎭 <b>El Drama de la Vida</b>\n\n${escaped}`;
+    case "conspiracy":
+      return `👁️ <b>Top Secret Conspiracy</b>\n\n${escaped}`;
+    case "fight":
+      return `⚔️ <b>RPG Battle Arena</b>\n\n${escaped}`;
+    case "hr":
+      return `💼 <b>HR Performance Memo</b>\n\n${escaped}`;
+    case "fortune":
+      return `🔮 <b>Tarot Vibe Reading</b>\n\n${escaped}`;
+    case "future":
+      return `🚀 <b>Historical Record (Year 3026)</b>\n\n${escaped}`;
     default:
       return escaped;
   }
@@ -510,6 +540,12 @@ function getHelpMessage() {
     "/quote — Random philosophical quote (Greek, Chinese, or Stoic)",
     "/mood — Analyze the group's current vibe",
     "/roast — Playful roast of recent chat activity 🔥",
+    "/drama — Over-the-top telenovela narrative 🎭",
+    "/conspiracy — Uncovers the hidden plots of the group 👁️",
+    "/fight — Battle another member in an RPG arena ⚔️",
+    "/hr — Official performance evaluation/memo from HR 💼",
+    "/fortune — Custom 3-card tarot reading based on sentiment 🔮",
+    "/future — Archaeologist from 3026 dissects your chat 🚀",
     "/help — Show this help message",
   ].join("\n");
 }
@@ -828,6 +864,12 @@ export default async function handler(req, res) {
         summary: "No messages to summarize yet.",
         mood: "Not enough messages to read the room yet. 🤷",
         roast: "No messages to roast yet — you're all suspiciously quiet. 👀",
+        drama: "No messages yet... where is the betrayal? The passion? 🥀",
+        conspiracy: "No messages yet. The truth is out there, but you aren't talking. 🛸",
+        fight: "No messages yet to determine combat styles. Peace reigns for now. 🕊️",
+        hr: "No workplace communication to review. Keep up the silent performance. 💼",
+        fortune: "No messages yet. The cards are blank. 🔮",
+        future: "No relics found in the archives. Speak, primitive beings! 🚀",
       };
       await sendTelegramMessage(
         botToken,
